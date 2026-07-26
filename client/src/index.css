@@ -5,6 +5,36 @@
 @layer base {
   :root {
     color-scheme: light;
+    --color-canvas: 231 238 250;
+    --color-surface: 255 255 255;
+    --color-ink: 10 27 54;
+    --color-muted: 91 115 149;
+    --color-hair: 215 226 242;
+    --color-azure: 27 92 229;
+    --color-azure-soft: 234 241 254;
+    --color-azure-deep: 11 47 134;
+    --color-aqua: 14 165 198;
+    --color-aqua-soft: 228 246 250;
+    --color-iris: 109 91 245;
+    --color-iris-soft: 238 235 254;
+    --color-signal: 18 183 106;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --color-canvas: 10 18 32;
+    --color-surface: 18 27 46;
+    --color-ink: 231 238 250;
+    --color-muted: 141 162 192;
+    --color-hair: 37 51 82;
+    --color-azure: 76 130 240;
+    --color-azure-soft: 33 45 74;
+    --color-azure-deep: 157 185 246;
+    --color-aqua: 41 196 232;
+    --color-aqua-soft: 22 46 56;
+    --color-iris: 155 140 255;
+    --color-iris-soft: 44 38 74;
+    --color-signal: 34 197 94;
   }
 
   html {
@@ -36,7 +66,7 @@
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[11px] font-medium tracking-wide;
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-xs font-medium tracking-wide;
   }
 
   .btn {
@@ -54,16 +84,17 @@
   }
 
   .field {
-    @apply w-full rounded-xl border border-hair bg-white px-3.5 py-2.5 text-sm
-           placeholder:text-muted/60 focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/25;
+    @apply w-full rounded-xl border border-hair bg-surface px-3.5 py-2.5 text-sm
+           placeholder:text-muted placeholder:opacity-60 focus:border-azure focus:outline-none focus:ring-2
+           focus:ring-[rgb(var(--color-azure)/0.25)];
   }
 
   .label {
-    @apply mb-1.5 block font-mono text-[11px] uppercase tracking-[.16em] text-muted;
+    @apply mb-1.5 block font-mono text-xs uppercase tracking-[.16em] text-muted;
   }
 
   .rule {
-    @apply h-px w-full bg-gradient-to-r from-hair via-hair/60 to-transparent;
+    @apply h-px w-full bg-gradient-to-r from-hair via-[rgb(var(--color-hair)/0.6)] to-transparent;
   }
 }
 

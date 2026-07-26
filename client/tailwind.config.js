@@ -1,18 +1,29 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        canvas: '#E7EEFA',
-        surface: '#FFFFFF',
-        ink: '#0A1B36',
-        muted: '#5B7395',
-        hair: '#D7E2F2',
-        azure: { DEFAULT: '#1B5CE5', soft: '#EAF1FE', deep: '#0B2F86' },
-        aqua: { DEFAULT: '#0EA5C6', soft: '#E4F6FA' },
-        iris: { DEFAULT: '#6D5BF5', soft: '#EEEBFE' },
-        signal: '#12B76A',
+        canvas: 'rgb(var(--color-canvas) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        ink: 'rgb(var(--color-ink) / <alpha-value>)',
+        muted: 'rgb(var(--color-muted) / <alpha-value>)',
+        hair: 'rgb(var(--color-hair) / <alpha-value>)',
+        azure: {
+          DEFAULT: 'rgb(var(--color-azure) / <alpha-value>)',
+          soft: 'rgb(var(--color-azure-soft) / <alpha-value>)',
+          deep: 'rgb(var(--color-azure-deep) / <alpha-value>)',
+        },
+        aqua: {
+          DEFAULT: 'rgb(var(--color-aqua) / <alpha-value>)',
+          soft: 'rgb(var(--color-aqua-soft) / <alpha-value>)',
+        },
+        iris: {
+          DEFAULT: 'rgb(var(--color-iris) / <alpha-value>)',
+          soft: 'rgb(var(--color-iris-soft) / <alpha-value>)',
+        },
+        signal: 'rgb(var(--color-signal) / <alpha-value>)',
       },
       fontFamily: {
         display: ['Sora', 'system-ui', 'sans-serif'],

@@ -46,7 +46,7 @@ export default function CourseCard({ course, index = 0, onOpen }) {
             <span className={`chip ${token.bg} ${token.text}`}>{course.code}</span>
             <span className="chip bg-canvas text-muted">{course.unit?.code}</span>
           </div>
-          <h3 className="mt-3 font-display text-[17px] font-semibold leading-snug tracking-tight">
+          <h3 className="mt-3 font-display text-lg font-semibold leading-snug tracking-tight">
             {pick(course, 'title')}
           </h3>
         </div>
@@ -72,7 +72,7 @@ export default function CourseCard({ course, index = 0, onOpen }) {
       <dl className="mt-4 grid grid-cols-3 gap-2">
         {metrics.map(({ icon: Icon, value, label }) => (
           <div key={label} className="rounded-xl bg-canvas/70 px-2.5 py-2">
-            <dt className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-[.12em] text-muted">
+            <dt className="flex items-center gap-1 font-mono text-xs uppercase tracking-[.12em] text-muted">
               <Icon className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
               {label}
             </dt>
@@ -82,7 +82,7 @@ export default function CourseCard({ course, index = 0, onOpen }) {
       </dl>
 
       <div className="mt-4">
-        <div className="mb-1.5 flex items-center justify-between font-mono text-[10px] uppercase tracking-[.14em] text-muted">
+        <div className="mb-1.5 flex items-center justify-between font-mono text-xs uppercase tracking-[.14em] text-muted">
           <span>{t('sem.load')}</span>
           <span className="tabular-nums">{formatHours(course.h_c + course.h_td + course.h_tp)}</span>
         </div>
@@ -91,16 +91,16 @@ export default function CourseCard({ course, index = 0, onOpen }) {
 
       <div className="mt-5 flex items-center gap-2 pt-1">
         {primary ? (
-          <button type="button" onClick={() => onOpen(course, true)} className="btn-primary flex-1 text-[13px]">
+          <button type="button" onClick={() => onOpen(course, true)} className="btn-primary flex-1 text-sm">
             {t('card.open')}
             <ArrowUpRight className="h-4 w-4" strokeWidth={2} />
           </button>
         ) : (
-          <span className="btn flex-1 cursor-default border border-dashed border-hair text-[13px] text-muted">
+          <span className="btn flex-1 cursor-default border border-dashed border-hair text-sm text-muted">
             {t('card.noResources')}
           </span>
         )}
-        <button type="button" onClick={() => onOpen(course, false)} className="btn-ghost px-3 text-[13px]">
+        <button type="button" onClick={() => onOpen(course, false)} className="btn-ghost px-3 text-sm">
           {t('card.details')}
         </button>
       </div>

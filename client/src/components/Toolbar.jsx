@@ -18,7 +18,7 @@ export default function Toolbar({ semesters, active, onSelect, query, onQuery })
               role="tab"
               aria-selected={selected}
               onClick={() => onSelect(tab.number)}
-              className={`relative rounded-xl px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-[.12em] transition-colors ${
+              className={`relative rounded-xl px-3.5 py-2 font-mono text-xs font-semibold uppercase tracking-[.12em] transition-colors ${
                 selected ? 'text-white' : 'text-muted hover:text-ink'
               }`}
             >

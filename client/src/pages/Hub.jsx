@@ -9,6 +9,8 @@ import Dashboard from '../components/Dashboard.jsx';
 import Toolbar from '../components/Toolbar.jsx';
 import CourseCard from '../components/CourseCard.jsx';
 import CourseDetail from '../components/CourseDetail.jsx';
+import AssistantWidget from '../components/AssistantWidget.jsx';
+import ExamDates from '../components/ExamDates.jsx';
 import { KindIcon, Skeleton, unitToken } from '../components/ui.jsx';
 import { isBookmarked, useBookmarksVersion } from '../lib/bookmarks.js';
 import { setLastViewed } from '../lib/recent.js';
@@ -101,6 +103,12 @@ export default function Hub({ program }) {
 
       {curriculum && <Dashboard curriculum={curriculum} onContinue={(course) => openCourse(course, true)} />}
 
+      {curriculum && (
+        <div className="mx-auto mt-8 max-w-6xl px-5">
+          <ExamDates semester={semester} />
+        </div>
+      )}
+
       {curriculum && scoped.some((sem) => sem.driveLinks?.length > 0) && (
         <div className="mx-auto mt-8 max-w-6xl px-5">
           <DriveSpace curriculum={scoped} />
@@ -129,7 +137,7 @@ export default function Hub({ program }) {
           <div className="card mt-10 flex flex-col items-start gap-3 p-6 sm:flex-row sm:items-center">
             <AlertTriangle className="h-5 w-5 shrink-0 text-azure" strokeWidth={1.9} aria-hidden="true" />
             <p className="flex-1 text-sm">{t('error.load')}</p>
-            <button type="button" onClick={load} className="btn-ghost text-[13px]">
+            <button type="button" onClick={load} className="btn-ghost text-sm">
               <RotateCw className="h-4 w-4" strokeWidth={1.9} />
               {t('error.retry')}
             </button>
@@ -147,7 +155,7 @@ export default function Hub({ program }) {
         {curriculum && visibleCount === 0 && (
           <div className="card mt-10 p-8 text-center">
             <p className="text-sm text-muted">{t('search.empty')}</p>
-            <button type="button" onClick={() => setQuery('')} className="btn-ghost mt-4 text-[13px]">
+            <button type="button" onClick={() => setQuery('')} className="btn-ghost mt-4 text-sm">
               {t('search.reset')}
             </button>
           </div>
@@ -162,7 +170,7 @@ export default function Hub({ program }) {
                   <span className={`${token.text}`}>{unit.code}</span>{' '}
                   <span className="text-muted">· {t(`unit.${unit.type}`)}</span>
                 </h2>
-                <span className="font-mono text-[11px] uppercase tracking-[.14em] text-muted">
+                <span className="font-mono text-xs uppercase tracking-[.14em] text-muted">
                   {semester === 0 ? `S${sem.number} · ` : ''}
                   {unit.credits} {t('card.credits')} · {unit.vhs}h · {t('card.coef')} {unit.coef}
                 </span>
@@ -184,6 +192,8 @@ export default function Hub({ program }) {
         focusResources={focusResources}
         onClose={() => setSelected(null)}
       />
+
+      <AssistantWidget curriculum={scoped} semester={semester} />
     </>
   );
 }
@@ -205,7 +215,7 @@ function DriveSpace({ curriculum }) {
         {withLinks.map((sem) => (
           <div key={sem.number}>
             {withLinks.length > 1 && (
-              <p className="mb-2 font-mono text-[10.5px] uppercase tracking-[.14em] text-muted">
+              <p className="mb-2 font-mono text-xs uppercase tracking-[.14em] text-muted">
                 {t('sem.s')} {sem.number}
               </p>
             )}
@@ -221,7 +231,7 @@ function DriveSpace({ curriculum }) {
                     <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-azure-soft text-azure">
                       <KindIcon kind="drive" className="h-3.5 w-3.5" />
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-[13px] font-medium">{l.label}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">{l.label}</span>
                     <ArrowUpRight
                       className="h-4 w-4 shrink-0 text-muted transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-azure"
                       strokeWidth={2}

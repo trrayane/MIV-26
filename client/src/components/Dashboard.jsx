@@ -43,7 +43,7 @@ export default function Dashboard({ curriculum, onContinue }) {
         <div className="flex items-center gap-4">
           <CreditRing value={Math.round(pct * 100)} max={100} suffix="%" size={64} stroke={6} label={t('dash.progress')} />
           <div className="min-w-0">
-            <p className="font-mono text-[10px] uppercase tracking-[.18em] text-muted">{t('dash.title')}</p>
+            <p className="font-mono text-xs uppercase tracking-[.18em] text-muted">{t('dash.title')}</p>
             <p className="mt-1 font-display text-lg font-semibold tabular-nums">
               {doneChapters}/{totalChapters} <span className="text-sm font-medium text-muted">{t('stats.chapters')}</span>
             </p>
@@ -54,13 +54,13 @@ export default function Dashboard({ curriculum, onContinue }) {
           <button
             type="button"
             onClick={() => onContinue(lastCourse)}
-            className="btn-primary text-[13px] sm:w-auto"
+            className="btn-primary text-sm sm:w-auto"
           >
             <PlayCircle className="h-4 w-4" strokeWidth={2} />
             {t('dash.continue')} — {lastCourse.code} · {pick(lastCourse, 'title')}
           </button>
         ) : (
-          <p className="text-[13px] text-muted">{t('dash.empty')}</p>
+          <p className="text-sm text-muted">{t('dash.empty')}</p>
         )}
       </div>
     </motion.section>

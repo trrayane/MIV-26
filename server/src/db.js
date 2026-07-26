@@ -103,6 +103,46 @@ CREATE TABLE IF NOT EXISTS meta (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS exam_dates (
+  id          INTEGER PRIMARY KEY,
+  semester_id INTEGER NOT NULL REFERENCES semesters(id) ON DELETE CASCADE,
+  course_id   INTEGER REFERENCES courses(id) ON DELETE CASCADE, -- optional: a module-specific exam
+  title_fr    TEXT NOT NULL,
+  title_en    TEXT NOT NULL,
+  date        TEXT NOT NULL,   -- ISO date, e.g. 2026-01-15
+  kind        TEXT NOT NULL DEFAULT 'exam', -- exam | td | tp | deadline | other
+  created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_exam_dates_semester ON exam_dates(semester_id);
+
+CREATE TABLE IF NOT EXISTS ai_questions (
+  id          INTEGER PRIMARY KEY,
+  course_id   INTEGER REFERENCES courses(id) ON DELETE SET NULL,
+  course_code TEXT NOT NULL,
+  question    TEXT NOT NULL,
+  answer      TEXT,
+  lang        TEXT,
+  used_files  INTEGER NOT NULL DEFAULT 0,
+  created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_questions_created ON ai_questions(created_at);
+
+CREATE TABLE IF NOT EXISTS students (
+  id            INTEGER PRIMARY KEY,
+  email         TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  name          TEXT,
+  created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS student_data (
+  student_id  INTEGER PRIMARY KEY REFERENCES students(id) ON DELETE CASCADE,
+  data        TEXT NOT NULL DEFAULT '{}', -- JSON: { progress, bookmarks, notes }
+  updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `);
 
 const semesterCols = db.prepare("PRAGMA table_info(semesters)").all().map((c) => c.name);

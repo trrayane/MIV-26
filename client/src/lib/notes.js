@@ -1,5 +1,6 @@
-/** Private per-chapter study notes, kept locally — never sent to the server. */
+/** Per-chapter study notes, kept locally and (when signed in) synced to the account. */
 const KEY = 'miv.notes.v1';
+const EVENT = 'miv-notes-change';
 
 function readAll() {
   try {
@@ -19,4 +20,5 @@ export function setNote(courseCode, chapterId, text) {
   if (text.trim()) course[chapterId] = text;
   else delete course[chapterId];
   localStorage.setItem(KEY, JSON.stringify({ ...all, [courseCode]: course }));
+  window.dispatchEvent(new Event(EVENT));
 }

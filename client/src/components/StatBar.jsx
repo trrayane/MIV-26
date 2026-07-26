@@ -21,7 +21,7 @@ export default function StatBar({ totals, scopeLabel, ringValue, ringMax }) {
         <div className="flex items-center gap-4 sm:pr-5">
           <CreditRing value={ringValue} max={ringMax} label={t('stats.credits')} />
           <div className="min-w-0">
-            <p className="font-mono text-[10px] uppercase tracking-[.18em] text-muted">{t('stats.semester')}</p>
+            <p className="font-mono text-xs uppercase tracking-[.18em] text-muted">{t('stats.semester')}</p>
             <p className="truncate font-display text-lg font-semibold">{scopeLabel}</p>
           </div>
         </div>
@@ -37,7 +37,7 @@ export default function StatBar({ totals, scopeLabel, ringValue, ringMax }) {
               transition={{ duration: 0.4, delay: 0.04 * i }}
               className="min-w-0"
             >
-              <dt className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[.14em] text-muted">
+              <dt className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-[.14em] text-muted">
                 <Icon className="h-3.5 w-3.5 text-azure" strokeWidth={1.9} aria-hidden="true" />
                 {t(labelKey)}
               </dt>

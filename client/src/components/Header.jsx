@@ -2,7 +2,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, FileText, ScrollText } from 'lucide-react';
 import { useLang } from '../lib/i18n.jsx';
-import { LangToggle, Logo } from './ui.jsx';
+import { LangToggle, Logo, ThemeToggle } from './ui.jsx';
+import AccountButton from './AccountButton.jsx';
 
 export function TopBar({ program }) {
   const { t } = useLang();
@@ -18,7 +19,7 @@ export function TopBar({ program }) {
             <span className="block font-display text-sm font-semibold tracking-tight">
               MIV<span className="text-azure"> · </span>USTHB
             </span>
-            <span className="block font-mono text-[10px] uppercase tracking-[.18em] text-muted">
+            <span className="block font-mono text-xs uppercase tracking-[.18em] text-muted">
               {t('hero.title')}
             </span>
           </span>
@@ -26,12 +27,14 @@ export function TopBar({ program }) {
 
         <nav className="ml-auto flex items-center gap-1.5 sm:gap-2">
           {onAdmin && (
-            <Link to="/" className="btn-ghost hidden px-3 py-2 text-[13px] sm:inline-flex">
+            <Link to="/" className="btn-ghost hidden px-3 py-2 text-sm sm:inline-flex">
               <ScrollText className="h-4 w-4" strokeWidth={1.75} />
               {t('admin.backToHub')}
             </Link>
           )}
+          <ThemeToggle />
           <LangToggle />
+          <AccountButton />
         </nav>
       </div>
     </header>
@@ -48,7 +51,7 @@ export function Hero({ program }) {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="font-mono text-[11px] uppercase tracking-[.2em] text-azure"
+        className="font-mono text-xs uppercase tracking-[.2em] text-azure"
       >
         {t('hero.eyebrow')}
       </motion.p>
@@ -68,17 +71,17 @@ export function Hero({ program }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted"
+            className="mt-4 max-w-xl text-base leading-relaxed text-muted"
           >
             {t('hero.lead')}
           </motion.p>
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
-            <a href={links.ficheTechnique} target="_blank" rel="noreferrer" className="btn-primary text-[13px]">
+            <a href={links.ficheTechnique} target="_blank" rel="noreferrer" className="btn-primary text-sm">
               <FileText className="h-4 w-4" strokeWidth={1.75} />
               {t('hero.fiche')}
             </a>
-            <a href={links.cahierDesCharges} target="_blank" rel="noreferrer" className="btn-ghost text-[13px]">
+            <a href={links.cahierDesCharges} target="_blank" rel="noreferrer" className="btn-ghost text-sm">
               <ScrollText className="h-4 w-4" strokeWidth={1.75} />
               {t('hero.cahier')}
               <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
@@ -92,11 +95,11 @@ export function Hero({ program }) {
           transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className="card p-5"
         >
-          <p className="font-mono text-[10px] uppercase tracking-[.18em] text-muted">{t('hero.tracks')}</p>
+          <p className="font-mono text-xs uppercase tracking-[.18em] text-muted">{t('hero.tracks')}</p>
           <ol className="mt-3 space-y-3">
             {[t('hero.track1'), t('hero.track2'), t('hero.track3')].map((track, i) => (
               <li key={track} className="flex gap-3 text-sm">
-                <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md bg-azure-soft font-mono text-[10px] font-semibold text-azure">
+                <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md bg-azure-soft font-mono text-xs font-semibold text-azure">
                   {i + 1}
                 </span>
                 <span className="leading-snug">{track}</span>
@@ -104,7 +107,7 @@ export function Hero({ program }) {
             ))}
           </ol>
           <div className="rule my-4" />
-          <p className="text-[12px] leading-relaxed text-muted">
+          <p className="text-xs leading-relaxed text-muted">
             {t('hero.university')}
             <br />
             <span className="text-muted/80">{t('hero.faculty')}</span>

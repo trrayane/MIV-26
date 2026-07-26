@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check, FolderOpen, KeyRound, Link2, ListChecks, LogOut, Plus, SlidersHorizontal, Trash2, UploadCloud } from 'lucide-react';
+import { BookOpen, CalendarDays, Check, FolderOpen, KeyRound, Link2, ListChecks, LogOut, MessageSquare, Pencil, Plus, SlidersHorizontal, Trash2, UploadCloud } from 'lucide-react';
 import { api, getToken, setToken } from '../lib/api.js';
 import { useLang } from '../lib/i18n.jsx';
-import { KindIcon, unitToken } from '../components/ui.jsx';
+import { KindIcon, Select, Skeleton, Toggle, unitToken } from '../components/ui.jsx';
 import { groupResources } from '../lib/resourceGroups.js';
 
 const KINDS = ['drive', 'pdf', 'video', 'course', 'tool', 'reference', 'lab', 'platform'];
@@ -24,7 +24,18 @@ export default function Admin() {
       .finally(() => setChecking(false));
   }, []);
 
-  if (checking) return <Shell><p className="text-sm text-muted">{t('loading')}…</p></Shell>;
+  if (checking) {
+    return (
+      <Shell>
+        <div className="mx-auto max-w-md space-y-3">
+          <Skeleton className="h-11 w-11 rounded-xl" />
+          <Skeleton className="h-8 w-2/3" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </Shell>
+    );
+  }
   if (!authed) return <SignIn onSuccess={() => setAuthed(true)} />;
   return <Workspace onSignOut={() => { setToken(null); setAuthed(false); }} />;
 }
@@ -68,7 +79,7 @@ function SignIn({ onSuccess }) {
           <KeyRound className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
         </span>
         <h1 className="mt-4 font-display text-2xl font-semibold tracking-tight">{t('admin.title')}</h1>
-        <p className="mt-1.5 text-[13px] text-muted">{t('admin.loginIntro')}</p>
+        <p className="mt-1.5 text-sm text-muted">{t('admin.loginIntro')}</p>
 
         <form onSubmit={submit} className="mt-6">
           <label className="label" htmlFor="pw">{t('admin.password')}</label>
@@ -81,13 +92,13 @@ function SignIn({ onSuccess }) {
             className="field"
             autoComplete="current-password"
           />
-          {error && <p className="mt-2 text-[12.5px] text-azure-deep">{error}</p>}
+          {error && <p className="mt-2 text-xs text-azure-deep">{error}</p>}
           <button type="submit" disabled={busy || !password} className="btn-primary mt-4 w-full">
             {t('admin.signin')}
           </button>
         </form>
 
-        <Link to="/" className="mt-4 inline-block font-mono text-[11px] uppercase tracking-[.14em] text-muted hover:text-azure">
+        <Link to="/" className="mt-4 inline-block font-mono text-xs uppercase tracking-[.14em] text-muted hover:text-azure">
           {t('admin.backToHub')}
         </Link>
       </motion.div>
@@ -100,20 +111,28 @@ function SignIn({ onSuccess }) {
 function Workspace({ onSignOut }) {
   const { t, pick } = useLang();
   const [courses, setCourses] = useState([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
   const [activeCode, setActiveCode] = useState(null);
   const [course, setCourse] = useState(null);
+  const [courseLoading, setCourseLoading] = useState(true);
   const [notice, setNotice] = useState(null);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     api.adminCourses().then((rows) => {
       setCourses(rows);
+      setCoursesLoading(false);
       if (rows.length) setActiveCode(rows[0].code);
     });
   }, []);
 
   useEffect(() => {
-    if (activeCode) api.course(activeCode).then(setCourse);
+    if (!activeCode) return;
+    setCourseLoading(true);
+    api.course(activeCode).then((c) => {
+      setCourse(c);
+      setCourseLoading(false);
+    });
   }, [activeCode]);
 
   const refresh = () => activeCode && api.course(activeCode).then(setCourse);
@@ -141,15 +160,18 @@ function Workspace({ onSignOut }) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight">{t('admin.title')}</h1>
-          <p className="mt-1.5 max-w-lg text-[13.5px] text-muted">{t('admin.subtitle')}</p>
+          <p className="mt-1.5 max-w-lg text-sm text-muted">{t('admin.subtitle')}</p>
         </div>
-        <button type="button" onClick={onSignOut} className="btn-ghost text-[13px]">
+        <button type="button" onClick={onSignOut} className="btn-ghost text-sm">
           <LogOut className="h-4 w-4" strokeWidth={1.8} />
           {t('admin.signout')}
         </button>
       </div>
 
+      <AssistantToggle onChanged={(msg) => flash(msg)} />
       <SemesterManager onChanged={(msg) => flash(msg)} />
+      <ExamManager onChanged={(msg) => flash(msg)} />
+      <AiHistory />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
         <nav aria-label={t('admin.pickCourse')} className="card scroll-slim max-h-[70vh] overflow-y-auto p-3 lg:sticky lg:top-24">
@@ -158,14 +180,21 @@ function Workspace({ onSignOut }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('admin.searchModule')}
-            className="field mb-3 text-[13px]"
+            className="field mb-3 text-sm"
           />
-          {bySemester.length === 0 && (
-            <p className="px-2 py-1.5 text-[13px] text-muted">{t('search.empty')}</p>
+          {coursesLoading && (
+            <div className="space-y-2 p-1">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-9 w-full" />
+              ))}
+            </div>
+          )}
+          {!coursesLoading && bySemester.length === 0 && (
+            <p className="px-2 py-1.5 text-sm text-muted">{t('search.empty')}</p>
           )}
           {bySemester.map(([number, rows]) => (
             <div key={number} className="mb-3 last:mb-0">
-              <p className="px-2 py-1.5 font-mono text-[10px] uppercase tracking-[.16em] text-muted">
+              <p className="px-2 py-1.5 font-mono text-xs uppercase tracking-[.16em] text-muted">
                 {t('sem.s')} {number}
               </p>
               <ul>
@@ -176,15 +205,15 @@ function Workspace({ onSignOut }) {
                       <button
                         type="button"
                         onClick={() => setActiveCode(row.code)}
-                        className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[13px] transition ${
+                        className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-sm transition ${
                           active ? 'bg-azure text-white' : 'hover:bg-azure-soft'
                         }`}
                       >
-                        <span className={`font-mono text-[10.5px] font-semibold ${active ? 'text-white/80' : 'text-azure'}`}>
+                        <span className={`w-11 shrink-0 truncate font-mono text-xs font-semibold ${active ? 'text-white/80' : 'text-azure'}`}>
                           {row.code}
                         </span>
                         <span className="min-w-0 flex-1 truncate">{pick(row, 'title')}</span>
-                        <span className={`font-mono text-[10px] ${active ? 'text-white/70' : 'text-muted'}`}>
+                        <span className={`font-mono text-xs ${active ? 'text-white/70' : 'text-muted'}`}>
                           {row.resource_count}
                         </span>
                       </button>
@@ -196,10 +225,18 @@ function Workspace({ onSignOut }) {
           ))}
         </nav>
 
-        <div className="space-y-6">
-          {course && (
+        <div className="w-full min-w-0 space-y-6">
+          {courseLoading && (
+            <div className="space-y-6">
+              <Skeleton className="h-24" />
+              <Skeleton className="h-32" />
+              <Skeleton className="h-56" />
+            </div>
+          )}
+          {!courseLoading && course && (
             <>
               <CourseHeader course={course} />
+              <ChapterManager course={course} onChanged={() => { flash(t('admin.saved')); refresh(); }} />
               <DriveField course={course} onSaved={(msg) => { flash(msg); refresh(); }} />
               <UploadFile course={course} onAdded={() => { flash(t('admin.saved')); refresh(); }} />
               <AddLink course={course} onAdded={() => { flash(t('admin.saved')); refresh(); }} />
@@ -215,7 +252,7 @@ function Workspace({ onSignOut }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
-            className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13px] text-white shadow-lift"
+            className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm text-white shadow-lift"
           >
             <Check className="h-4 w-4" strokeWidth={2.2} aria-hidden="true" />
             {notice}
@@ -223,6 +260,35 @@ function Workspace({ onSignOut }) {
         )}
       </AnimatePresence>
     </Shell>
+  );
+}
+
+function AssistantToggle({ onChanged }) {
+  const { t } = useLang();
+  const [enabled, setEnabled] = useState(null);
+
+  useEffect(() => { api.assistantStatus().then((s) => setEnabled(s.enabled)); }, []);
+
+  const toggle = async () => {
+    const next = !enabled;
+    setEnabled(next);
+    await api.setAssistantEnabled(next);
+    onChanged(t('admin.saved'));
+  };
+
+  if (enabled === null) return null;
+
+  return (
+    <section className="card mt-8 flex w-full items-center p-5">
+      <Toggle checked={enabled} onChange={toggle} label={t('admin.assistant')} />
+      <div className="ml-3 flex-1">
+        <p className="font-display text-sm font-semibold uppercase tracking-[.1em] text-muted">{t('admin.assistant')}</p>
+        <p className="mt-0.5 text-xs text-muted">{t('admin.assistantHint')}</p>
+      </div>
+      <span className={`chip ml-3 flex-none ${enabled ? 'bg-azure-soft text-azure' : 'bg-canvas text-muted'}`}>
+        {enabled ? t('admin.assistantOn') : t('admin.assistantOff')}
+      </span>
+    </section>
   );
 }
 
@@ -241,33 +307,21 @@ function SemesterManager({ onChanged }) {
   };
 
   return (
-    <section className="card mt-8 p-5">
+    <section className="card mt-8 w-full p-5">
       <div className="flex items-center gap-2">
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-azure-soft text-azure">
           <SlidersHorizontal className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
         </span>
         <p className="font-display text-sm font-semibold uppercase tracking-[.1em] text-muted">{t('admin.semesters')}</p>
       </div>
-      <p className="mt-1 text-[12px] text-muted">{t('admin.semestersHint')}</p>
+      <p className="mt-1 text-xs text-muted">{t('admin.semestersHint')}</p>
 
       <ul className="mt-4 space-y-2">
         {semesters.map((s) => (
           <li key={s.number} className="rounded-xl border border-hair">
-            <div className="flex items-center gap-3 px-3 py-2.5">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={!!s.visible}
-                onClick={() => toggle(s.number, !s.visible)}
-                className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${s.visible ? 'bg-azure' : 'bg-hair'}`}
-              >
-                <span
-                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                    s.visible ? 'translate-x-[22px]' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-              <span className="flex flex-1 items-center gap-2.5 text-[13.5px] font-medium">
+            <div className="flex items-center px-3 py-2.5">
+              <Toggle checked={!!s.visible} onChange={() => toggle(s.number, !s.visible)} label={`${t('sem.s')} ${s.number}`} />
+              <span className="ml-3 flex flex-1 items-center gap-2.5 text-sm font-medium">
                 {t('sem.s')} {s.number} — {s.label_fr}
                 {!s.visible && (
                   <span className="chip bg-canvas text-muted">{t('admin.hidden')}</span>
@@ -276,7 +330,7 @@ function SemesterManager({ onChanged }) {
               <button
                 type="button"
                 onClick={() => setOpen(open === s.number ? null : s.number)}
-                className="btn-ghost px-3 text-[12.5px]"
+                className="btn-ghost ml-3 flex-none px-3 text-xs"
               >
                 <FolderOpen className="h-3.5 w-3.5" strokeWidth={1.8} />
                 {t('admin.driveLinks')}
@@ -351,8 +405,8 @@ function DriveField({ course, onSaved }) {
           {t('admin.save')}
         </button>
       </div>
-      <p className="mt-2 text-[12px] text-muted">{t('admin.driveHint')}</p>
-      {error && <p className="mt-2 text-[12.5px] text-azure-deep">{error}</p>}
+      <p className="mt-2 text-xs text-muted">{t('admin.driveHint')}</p>
+      {error && <p className="mt-2 text-xs text-azure-deep">{error}</p>}
     </section>
   );
 }
@@ -397,37 +451,32 @@ function UploadFile({ course, onAdded }) {
   return (
     <form onSubmit={submit} className="card p-5">
       <p className="font-display text-sm font-semibold uppercase tracking-[.1em] text-muted">{t('admin.uploadFile')}</p>
-      <p className="mt-1 text-[12px] text-muted">{t('admin.uploadHint')}</p>
+      <p className="mt-1 text-xs text-muted">{t('admin.uploadHint')}</p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div>
           <label className="label" htmlFor="category">{t('admin.category')}</label>
-          <select
+          <Select
             id="category"
             value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="field"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{t(`group.${c}`)}</option>
-            ))}
-          </select>
+            onChange={(v) => setForm({ ...form, category: v })}
+            options={CATEGORIES.map((c) => ({ value: c, label: t(`group.${c}`) }))}
+          />
         </div>
         <div>
           <label className="label" htmlFor="chapter-up">{t('admin.linkChapter')}</label>
-          <select
+          <Select
             id="chapter-up"
             value={form.chapter_id}
-            onChange={(e) => setForm({ ...form, chapter_id: e.target.value })}
-            className="field"
-          >
-            <option value="">{t('admin.wholeCourse')}</option>
-            {course.chapters.map((ch) => (
-              <option key={ch.id} value={ch.id}>
-                {String(ch.position).padStart(2, '0')} — {pick(ch, 'title')}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setForm({ ...form, chapter_id: v })}
+            options={[
+              { value: '', label: t('admin.wholeCourse') },
+              ...course.chapters.map((ch) => ({
+                value: ch.id,
+                label: `${String(ch.position).padStart(2, '0')} — ${pick(ch, 'title')}`,
+              })),
+            ]}
+          />
         </div>
         <div>
           <label className="label" htmlFor="label-up">{t('admin.optionalName')}</label>
@@ -450,7 +499,7 @@ function UploadFile({ course, onAdded }) {
         </div>
       </div>
 
-      {error && <p className="mt-3 text-[12.5px] text-azure-deep">{error}</p>}
+      {error && <p className="mt-3 text-xs text-azure-deep">{error}</p>}
 
       <button type="submit" disabled={busy} className="btn-primary mt-4">
         <UploadCloud className="h-4 w-4" strokeWidth={2} />
@@ -503,7 +552,7 @@ function SemesterDriveLinks({ semester, onAdded }) {
       <p className="font-display text-sm font-semibold uppercase tracking-[.1em] text-muted">
         {t('admin.driveLinks')} · {t('sem.s')} {semester}
       </p>
-      <p className="mt-1 text-[12px] text-muted">{t('admin.driveLinksHint')}</p>
+      <p className="mt-1 text-xs text-muted">{t('admin.driveLinksHint')}</p>
 
       {links.length > 0 && (
         <ul className="mt-4 space-y-2">
@@ -513,8 +562,8 @@ function SemesterDriveLinks({ semester, onAdded }) {
                 <KindIcon kind="drive" className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13.5px] font-medium">{l.label}</p>
-                <p className="truncate font-mono text-[10.5px] text-muted">{l.url}</p>
+                <p className="truncate text-sm font-medium">{l.label}</p>
+                <p className="truncate font-mono text-xs text-muted">{l.url}</p>
               </div>
               <button
                 type="button"
@@ -552,7 +601,7 @@ function SemesterDriveLinks({ semester, onAdded }) {
           />
         </div>
 
-        {error && <p className="sm:col-span-2 text-[12.5px] text-azure-deep">{error}</p>}
+        {error && <p className="sm:col-span-2 text-xs text-azure-deep">{error}</p>}
 
         <button type="submit" disabled={busy} className="btn-primary sm:col-span-2">
           <Plus className="h-4 w-4" strokeWidth={2} />
@@ -626,31 +675,31 @@ function AddLink({ course, onAdded }) {
         </div>
         <div>
           <label className="label" htmlFor="kind">{t('admin.linkKind')}</label>
-          <select id="kind" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} className="field">
-            {KINDS.map((k) => (
-              <option key={k} value={k}>{t(`kind.${k}`)}</option>
-            ))}
-          </select>
+          <Select
+            id="kind"
+            value={form.kind}
+            onChange={(v) => setForm({ ...form, kind: v })}
+            options={KINDS.map((k) => ({ value: k, label: t(`kind.${k}`) }))}
+          />
         </div>
         <div>
           <label className="label" htmlFor="chapter">{t('admin.linkChapter')}</label>
-          <select
+          <Select
             id="chapter"
             value={form.chapter_id}
-            onChange={(e) => setForm({ ...form, chapter_id: e.target.value })}
-            className="field"
-          >
-            <option value="">{t('admin.wholeCourse')}</option>
-            {course.chapters.map((ch) => (
-              <option key={ch.id} value={ch.id}>
-                {String(ch.position).padStart(2, '0')} — {pick(ch, 'title')}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setForm({ ...form, chapter_id: v })}
+            options={[
+              { value: '', label: t('admin.wholeCourse') },
+              ...course.chapters.map((ch) => ({
+                value: ch.id,
+                label: `${String(ch.position).padStart(2, '0')} — ${pick(ch, 'title')}`,
+              })),
+            ]}
+          />
         </div>
       </div>
 
-      {error && <p className="mt-3 text-[12.5px] text-azure-deep">{error}</p>}
+      {error && <p className="mt-3 text-xs text-azure-deep">{error}</p>}
 
       <button type="submit" disabled={busy} className="btn-primary mt-4">
         <Plus className="h-4 w-4" strokeWidth={2} />
@@ -684,49 +733,475 @@ function LinkList({ course, onChanged }) {
           </span>
           <p className="font-display text-sm font-semibold uppercase tracking-[.1em] text-muted">{t('admin.existing')}</p>
         </div>
-        <span className="font-mono text-[11px] tabular-nums text-muted">{course.resources.length}</span>
+        <span className="font-mono text-xs tabular-nums text-muted">{course.resources.length}</span>
       </div>
 
       {course.resources.length === 0 ? (
-        <p className="mt-4 text-[13px] text-muted">{t('admin.empty')}</p>
+        <p className="mt-4 text-sm text-muted">{t('admin.empty')}</p>
       ) : (
         <div className="mt-4 space-y-5">
           {groups.map(([key, list]) => (
             <div key={key}>
-              <p className="mb-2 flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[.14em] text-azure">
+              <p className="mb-2 flex items-center gap-2 font-mono text-xs uppercase tracking-[.14em] text-azure">
                 <KindIcon kind={key === 'drive' ? 'drive' : list[0].kind} className="h-3.5 w-3.5" />
                 {t(`group.${key}`)}
                 <span className="text-muted">· {list.length}</span>
               </p>
               <ul className="space-y-2">
                 {list.map((r) => (
-                  <li key={r.id} className="flex items-center gap-3 rounded-xl border border-hair px-3 py-2.5">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-azure-soft text-azure">
-                      <KindIcon kind={r.kind} className="h-4 w-4" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13.5px] font-medium">{r.label}</p>
-                      <p className="truncate font-mono text-[10.5px] text-muted">
-                        {chapterName(r.chapter_id)} · {r.url}
-                      </p>
-                    </div>
-                    {r.origin === 'seeded' && (
-                      <span className="chip hidden bg-canvas text-muted sm:inline-flex">{t('admin.seeded')}</span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => remove(r.id)}
-                      aria-label={t('admin.delete')}
-                      className="rounded-lg p-2 text-muted transition hover:bg-azure-soft hover:text-azure"
-                    >
-                      <Trash2 className="h-4 w-4" strokeWidth={1.8} />
-                    </button>
-                  </li>
+                  <EditableResource
+                    key={r.id}
+                    resource={r}
+                    course={course}
+                    chapterName={chapterName}
+                    onRemove={() => remove(r.id)}
+                    onChanged={onChanged}
+                  />
                 ))}
               </ul>
             </div>
           ))}
         </div>
+      )}
+    </section>
+  );
+}
+
+function EditableResource({ resource, course, chapterName, onRemove, onChanged }) {
+  const { t, pick } = useLang();
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ label: resource.label, url: resource.url, kind: resource.kind, chapter_id: resource.chapter_id ?? '' });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  const save = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      await api.updateResource(resource.id, {
+        label: form.label,
+        url: form.url,
+        kind: form.kind,
+        chapter_id: form.chapter_id ? Number(form.chapter_id) : null,
+      });
+      setEditing(false);
+      onChanged();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <li className="rounded-xl border border-azure/40 bg-azure-soft/30 p-3">
+        <form onSubmit={save} className="grid gap-2.5 sm:grid-cols-2">
+          <input
+            value={form.label}
+            onChange={(e) => setForm({ ...form, label: e.target.value })}
+            className="field sm:col-span-2"
+            placeholder={t('admin.linkName')}
+          />
+          <input
+            value={form.url}
+            onChange={(e) => setForm({ ...form, url: e.target.value })}
+            className="field sm:col-span-2"
+            placeholder={t('admin.linkUrl')}
+          />
+          <Select
+            value={form.kind}
+            onChange={(v) => setForm({ ...form, kind: v })}
+            options={KINDS.map((k) => ({ value: k, label: t(`kind.${k}`) }))}
+          />
+          <Select
+            value={form.chapter_id}
+            onChange={(v) => setForm({ ...form, chapter_id: v })}
+            options={[
+              { value: '', label: t('admin.wholeCourse') },
+              ...course.chapters.map((ch) => ({
+                value: ch.id,
+                label: `${String(ch.position).padStart(2, '0')} — ${pick(ch, 'title')}`,
+              })),
+            ]}
+          />
+          {error && <p className="text-xs text-azure-deep sm:col-span-2">{error}</p>}
+          <div className="flex gap-2 sm:col-span-2">
+            <button type="submit" disabled={busy} className="btn-primary flex-1 text-sm">
+              <Check className="h-4 w-4" strokeWidth={2} />
+              {t('admin.save')}
+            </button>
+            <button type="button" onClick={() => setEditing(false)} className="btn-ghost text-sm">
+              {t('admin.cancel')}
+            </button>
+          </div>
+        </form>
+      </li>
+    );
+  }
+
+  return (
+    <li className="flex items-center gap-3 rounded-xl border border-hair px-3 py-2.5">
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-azure-soft text-azure">
+        <KindIcon kind={resource.kind} className="h-4 w-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{resource.label}</p>
+        <p className="truncate font-mono text-xs text-muted">
+          {chapterName(resource.chapter_id)} · {resource.url}
+        </p>
+      </div>
+      {resource.origin === 'seeded' && (
+        <span className="chip hidden bg-canvas text-muted sm:inline-flex">{t('admin.seeded')}</span>
+      )}
+      <button
+        type="button"
+        onClick={() => { setForm({ label: resource.label, url: resource.url, kind: resource.kind, chapter_id: resource.chapter_id ?? '' }); setEditing(true); }}
+        aria-label={t('admin.edit')}
+        title={t('admin.edit')}
+        className="rounded-lg p-2 text-muted transition hover:bg-azure-soft hover:text-azure"
+      >
+        <Pencil className="h-4 w-4" strokeWidth={1.8} />
+      </button>
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={t('admin.delete')}
+        title={t('admin.delete')}
+        className="rounded-lg p-2 text-muted transition hover:bg-azure-soft hover:text-azure"
+      >
+        <Trash2 className="h-4 w-4" strokeWidth={1.8} />
+      </button>
+    </li>
+  );
+}
+
+/* ------------------------------------------------------------- chapters */
+
+function ChapterManager({ course, onChanged }) {
+  const { t } = useLang();
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState({ title_fr: '', title_en: '' });
+  const [busy, setBusy] = useState(false);
+
+  const add = async (e) => {
+    e.preventDefault();
+    if (!draft.title_fr.trim()) return;
+    setBusy(true);
+    try {
+      await api.createChapter(course.id, { title_fr: draft.title_fr, title_en: draft.title_en || draft.title_fr });
+      setDraft({ title_fr: '', title_en: '' });
+      setAdding(false);
+      onChanged();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm(t('admin.confirmDeleteChapter'))) return;
+    await api.deleteChapter(id);
+    onChanged();
+  };
+
+  return (
+    <section className="card p-5">
+      <div className="flex items-center gap-2">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-azure-soft text-azure">
+          <BookOpen className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
+        </span>
+        <p className="font-display text-sm font-semibold uppercase tracking-[.1em] text-muted">{t('admin.chapters')}</p>
+        <span className="ml-auto font-mono text-xs tabular-nums text-muted">{course.chapters.length}</span>
+      </div>
+      <p className="mt-1 text-xs text-muted">{t('admin.chaptersHint')}</p>
+
+      {course.chapters.length === 0 ? (
+        <p className="mt-4 text-sm text-muted">{t('admin.noChapters')}</p>
+      ) : (
+        <ol className="mt-4 space-y-2">
+          {course.chapters.map((ch) => (
+            <ChapterItem key={ch.id} chapter={ch} onRemove={() => remove(ch.id)} onChanged={onChanged} />
+          ))}
+        </ol>
+      )}
+
+      {adding ? (
+        <form onSubmit={add} className="mt-3 grid gap-2.5 rounded-xl border border-azure/40 bg-azure-soft/30 p-3 sm:grid-cols-2">
+          <input
+            autoFocus
+            value={draft.title_fr}
+            onChange={(e) => setDraft({ ...draft, title_fr: e.target.value })}
+            className="field"
+            placeholder={t('admin.chapterTitle')}
+          />
+          <input
+            value={draft.title_en}
+            onChange={(e) => setDraft({ ...draft, title_en: e.target.value })}
+            className="field"
+            placeholder={t('admin.chapterTitleEn')}
+          />
+          <div className="flex gap-2 sm:col-span-2">
+            <button type="submit" disabled={busy || !draft.title_fr.trim()} className="btn-primary flex-1 text-sm">
+              <Check className="h-4 w-4" strokeWidth={2} />
+              {t('admin.save')}
+            </button>
+            <button type="button" onClick={() => setAdding(false)} className="btn-ghost text-sm">
+              {t('admin.cancel')}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <button type="button" onClick={() => setAdding(true)} className="btn-ghost mt-3 text-sm">
+          <Plus className="h-4 w-4" strokeWidth={2} />
+          {t('admin.addChapter')}
+        </button>
+      )}
+    </section>
+  );
+}
+
+function ChapterItem({ chapter, onRemove, onChanged }) {
+  const { t, pick } = useLang();
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ title_fr: chapter.title_fr, title_en: chapter.title_en });
+  const [busy, setBusy] = useState(false);
+
+  const save = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await api.updateChapter(chapter.id, form);
+      setEditing(false);
+      onChanged();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <li className="rounded-xl border border-azure/40 bg-azure-soft/30 p-3">
+        <form onSubmit={save} className="grid gap-2.5 sm:grid-cols-2">
+          <input value={form.title_fr} onChange={(e) => setForm({ ...form, title_fr: e.target.value })} className="field" placeholder={t('admin.chapterTitle')} />
+          <input value={form.title_en} onChange={(e) => setForm({ ...form, title_en: e.target.value })} className="field" placeholder={t('admin.chapterTitleEn')} />
+          <div className="flex gap-2 sm:col-span-2">
+            <button type="submit" disabled={busy} className="btn-primary flex-1 text-sm">
+              <Check className="h-4 w-4" strokeWidth={2} />
+              {t('admin.save')}
+            </button>
+            <button type="button" onClick={() => setEditing(false)} className="btn-ghost text-sm">{t('admin.cancel')}</button>
+          </div>
+        </form>
+      </li>
+    );
+  }
+
+  return (
+    <li className="flex items-center gap-3 rounded-xl border border-hair px-3 py-2.5">
+      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-azure-soft font-mono text-xs font-semibold text-azure">
+        {String(chapter.position).padStart(2, '0')}
+      </span>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium">{pick(chapter, 'title')}</span>
+      <button type="button" onClick={() => { setForm({ title_fr: chapter.title_fr, title_en: chapter.title_en }); setEditing(true); }} aria-label={t('admin.edit')} title={t('admin.edit')} className="rounded-lg p-2 text-muted transition hover:bg-azure-soft hover:text-azure">
+        <Pencil className="h-4 w-4" strokeWidth={1.8} />
+      </button>
+      <button type="button" onClick={onRemove} aria-label={t('admin.delete')} title={t('admin.delete')} className="rounded-lg p-2 text-muted transition hover:bg-azure-soft hover:text-azure">
+        <Trash2 className="h-4 w-4" strokeWidth={1.8} />
+      </button>
+    </li>
+  );
+}
+
+/* ------------------------------------------------------------- exam dates */
+
+const EXAM_KINDS = ['exam', 'deadline', 'td', 'tp', 'other'];
+
+function ExamManager({ onChanged }) {
+  const { t, pick } = useLang();
+  const empty = { semester: '1', title_fr: '', title_en: '', date: '', kind: 'exam', course_code: '' };
+  const [rows, setRows] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [form, setForm] = useState(empty);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  const load = () => api.adminExamDates().then(setRows);
+  useEffect(() => {
+    load();
+    api.adminCourses().then(setCourses);
+    api.adminSemesters().then(setSemesters);
+  }, []);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      await api.createExamDate({
+        semester: Number(form.semester),
+        title_fr: form.title_fr,
+        title_en: form.title_en || form.title_fr,
+        date: form.date,
+        kind: form.kind,
+        course_code: form.course_code || null,
+      });
+      setForm(empty);
+      load();
+      onChanged(t('admin.saved'));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm(t('admin.confirmDelete'))) return;
+    await api.deleteExamDate(id);
+    load();
+    onChanged(t('admin.saved'));
+  };
+
+  const semOptions = (semesters.length ? semesters.map((s) => s.number) : [1, 2, 3, 4]).map((n) => ({
+    value: String(n),
+    label: `${t('sem.s')} ${n}`,
+  }));
+
+  return (
+    <section className="card mt-8 p-5">
+      <div className="flex items-center gap-2">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-azure-soft text-azure">
+          <CalendarDays className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
+        </span>
+        <p className="font-display text-sm font-semibold uppercase tracking-[.1em] text-muted">{t('admin.examDates')}</p>
+      </div>
+      <p className="mt-1 text-xs text-muted">{t('admin.examDatesHint')}</p>
+
+      {rows.length > 0 && (
+        <ul className="mt-4 space-y-2">
+          {rows.map((r) => (
+            <li key={r.id} className="flex items-center gap-3 rounded-xl border border-hair px-3 py-2.5">
+              <span className="chip shrink-0 bg-azure-soft text-azure">{t(`examkind.${r.kind}`) ?? r.kind}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium">
+                  {pick(r, 'title')}
+                  {r.course_code ? <span className="text-muted"> · {r.course_code}</span> : null}
+                </span>
+                <span className="block font-mono text-xs text-muted">
+                  {t('sem.s')} {r.semester} · {r.date}
+                </span>
+              </span>
+              <button type="button" onClick={() => remove(r.id)} aria-label={t('admin.delete')} title={t('admin.delete')} className="rounded-lg p-2 text-muted transition hover:bg-azure-soft hover:text-azure">
+                <Trash2 className="h-4 w-4" strokeWidth={1.8} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <form onSubmit={submit} className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="sm:col-span-2">
+          <label className="label">{t('admin.examTitle')}</label>
+          <input value={form.title_fr} onChange={(e) => setForm({ ...form, title_fr: e.target.value })} className="field" placeholder="Examen final" />
+        </div>
+        <div>
+          <label className="label">{t('admin.examDate')}</label>
+          <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="field" />
+        </div>
+        <div>
+          <label className="label">{t('admin.examKind')}</label>
+          <Select value={form.kind} onChange={(v) => setForm({ ...form, kind: v })} options={EXAM_KINDS.map((k) => ({ value: k, label: t(`examkind.${k}`) }))} />
+        </div>
+        <div>
+          <label className="label">{t('sem.s')}</label>
+          <Select value={form.semester} onChange={(v) => setForm({ ...form, semester: v })} options={semOptions} />
+        </div>
+        <div>
+          <label className="label">{t('admin.examModule')}</label>
+          <Select
+            value={form.course_code}
+            onChange={(v) => setForm({ ...form, course_code: v })}
+            options={[
+              { value: '', label: t('admin.examAll') },
+              ...courses
+                .filter((c) => String(c.semester) === form.semester)
+                .map((c) => ({ value: c.code, label: `${c.code} — ${pick(c, 'title')}` })),
+            ]}
+          />
+        </div>
+        {error && <p className="text-xs text-azure-deep sm:col-span-2">{error}</p>}
+        <button type="submit" disabled={busy || !form.title_fr.trim() || !form.date} className="btn-primary sm:col-span-2">
+          <Plus className="h-4 w-4" strokeWidth={2} />
+          {t('admin.addExam')}
+        </button>
+      </form>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------- AI history */
+
+function AiHistory() {
+  const { t } = useLang();
+  const [rows, setRows] = useState(null);
+  const [openId, setOpenId] = useState(null);
+
+  const load = () => api.aiQuestions(100).then(setRows).catch(() => setRows([]));
+  useEffect(() => { load(); }, []);
+
+  const remove = async (id) => {
+    if (!window.confirm(t('admin.confirmDelete'))) return;
+    await api.deleteAiQuestion(id);
+    load();
+  };
+
+  return (
+    <section className="card mt-8 p-5">
+      <div className="flex items-center gap-2">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-azure-soft text-azure">
+          <MessageSquare className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
+        </span>
+        <p className="font-display text-sm font-semibold uppercase tracking-[.1em] text-muted">{t('admin.aiHistory')}</p>
+        {rows && <span className="ml-auto font-mono text-xs tabular-nums text-muted">{rows.length}</span>}
+      </div>
+      <p className="mt-1 text-xs text-muted">{t('admin.aiHistoryHint')}</p>
+
+      {!rows ? (
+        <div className="mt-4 space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12" />)}
+        </div>
+      ) : rows.length === 0 ? (
+        <p className="mt-4 text-sm text-muted">{t('admin.aiEmpty')}</p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {rows.map((r) => {
+            const open = openId === r.id;
+            return (
+              <li key={r.id} className="rounded-xl border border-hair p-3">
+                <div className="flex items-start gap-3">
+                  <span className="chip mt-0.5 shrink-0 bg-azure-soft text-azure">{r.course_code}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{r.question}</p>
+                    <p className="mt-0.5 font-mono text-xs text-muted">{r.created_at}</p>
+                    {open && r.answer && (
+                      <p className="mt-2 whitespace-pre-wrap rounded-lg bg-canvas p-3 text-sm leading-relaxed text-muted">{r.answer}</p>
+                    )}
+                    {r.answer && (
+                      <button type="button" onClick={() => setOpenId(open ? null : r.id)} className="mt-2 font-mono text-xs uppercase tracking-[.12em] text-azure hover:underline">
+                        {open ? t('admin.aiHideAnswer') : t('admin.aiShowAnswer')}
+                      </button>
+                    )}
+                  </div>
+                  <button type="button" onClick={() => remove(r.id)} aria-label={t('admin.delete')} title={t('admin.delete')} className="rounded-lg p-2 text-muted transition hover:bg-azure-soft hover:text-azure">
+                    <Trash2 className="h-4 w-4" strokeWidth={1.8} />
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </section>
   );
