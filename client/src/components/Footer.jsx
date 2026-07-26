@@ -1,5 +1,11 @@
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, Github, Globe, Linkedin, ShieldCheck } from 'lucide-react';
+
+const SOCIALS = [
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/rayane-terki-334b19378/', Icon: Linkedin },
+  { label: 'GitHub', href: 'https://github.com/trrayane', Icon: Github },
+  { label: 'Portfolio', href: 'https://portdolio-beta.vercel.app/', Icon: Globe },
+];
 import { useLang } from '../lib/i18n.jsx';
 import { Logo } from './ui.jsx';
 
@@ -55,9 +61,25 @@ export default function Footer({ program }) {
       </div>
 
       <div className="border-t border-hair/70">
-        <div className="mx-auto flex max-w-6xl flex-col gap-1 px-5 py-4 font-mono text-xs uppercase tracking-[.14em] text-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} · Master Informatique Visuelle · USTHB</span>
-          <span>{t('footer.built')}</span>
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-mono text-xs uppercase tracking-[.14em] text-muted">
+            © {new Date().getFullYear()} · Master Informatique Visuelle · USTHB
+          </span>
+          <div className="flex items-center gap-1">
+            {SOCIALS.map(({ label, href, Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={label}
+                title={label}
+                className="rounded-lg p-2 text-muted transition hover:bg-azure-soft hover:text-azure"
+              >
+                <Icon className="h-4 w-4" strokeWidth={1.9} />
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </footer>
