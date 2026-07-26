@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BookOpen, CalendarDays, Check, FolderOpen, KeyRound, Link2, ListChecks, LogOut, MessageSquare, Pencil, Plus, SlidersHorizontal, Trash2, UploadCloud } from 'lucide-react';
+import { BookOpen, Check, FolderOpen, KeyRound, Link2, ListChecks, LogOut, MessageSquare, Pencil, Plus, SlidersHorizontal, Trash2, UploadCloud } from 'lucide-react';
 import { api, getToken, setToken } from '../lib/api.js';
 import { useLang } from '../lib/i18n.jsx';
 import { KindIcon, Select, Skeleton, Toggle, unitToken } from '../components/ui.jsx';
@@ -170,7 +170,6 @@ function Workspace({ onSignOut }) {
 
       <AssistantToggle onChanged={(msg) => flash(msg)} />
       <SemesterManager onChanged={(msg) => flash(msg)} />
-      <ExamManager onChanged={(msg) => flash(msg)} />
       <AiHistory />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
@@ -1011,134 +1010,6 @@ function ChapterItem({ chapter, onRemove, onChanged }) {
         <Trash2 className="h-4 w-4" strokeWidth={1.8} />
       </button>
     </li>
-  );
-}
-
-/* ------------------------------------------------------------- exam dates */
-
-const EXAM_KINDS = ['exam', 'deadline', 'td', 'tp', 'other'];
-
-function ExamManager({ onChanged }) {
-  const { t, pick } = useLang();
-  const empty = { semester: '1', title_fr: '', title_en: '', date: '', kind: 'exam', course_code: '' };
-  const [rows, setRows] = useState([]);
-  const [courses, setCourses] = useState([]);
-  const [semesters, setSemesters] = useState([]);
-  const [form, setForm] = useState(empty);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(null);
-
-  const load = () => api.adminExamDates().then(setRows);
-  useEffect(() => {
-    load();
-    api.adminCourses().then(setCourses);
-    api.adminSemesters().then(setSemesters);
-  }, []);
-
-  const submit = async (e) => {
-    e.preventDefault();
-    setBusy(true);
-    setError(null);
-    try {
-      await api.createExamDate({
-        semester: Number(form.semester),
-        title_fr: form.title_fr,
-        title_en: form.title_en || form.title_fr,
-        date: form.date,
-        kind: form.kind,
-        course_code: form.course_code || null,
-      });
-      setForm(empty);
-      load();
-      onChanged(t('admin.saved'));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const remove = async (id) => {
-    if (!window.confirm(t('admin.confirmDelete'))) return;
-    await api.deleteExamDate(id);
-    load();
-    onChanged(t('admin.saved'));
-  };
-
-  const semOptions = (semesters.length ? semesters.map((s) => s.number) : [1, 2, 3, 4]).map((n) => ({
-    value: String(n),
-    label: `${t('sem.s')} ${n}`,
-  }));
-
-  return (
-    <section className="card mt-8 p-5">
-      <div className="flex items-center gap-2">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-azure-soft text-azure">
-          <CalendarDays className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
-        </span>
-        <p className="font-display text-sm font-semibold uppercase tracking-[.1em] text-muted">{t('admin.examDates')}</p>
-      </div>
-      <p className="mt-1 text-xs text-muted">{t('admin.examDatesHint')}</p>
-
-      {rows.length > 0 && (
-        <ul className="mt-4 space-y-2">
-          {rows.map((r) => (
-            <li key={r.id} className="flex items-center gap-3 rounded-xl border border-hair px-3 py-2.5">
-              <span className="chip shrink-0 bg-azure-soft text-azure">{t(`examkind.${r.kind}`) ?? r.kind}</span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">
-                  {pick(r, 'title')}
-                  {r.course_code ? <span className="text-muted"> · {r.course_code}</span> : null}
-                </span>
-                <span className="block font-mono text-xs text-muted">
-                  {t('sem.s')} {r.semester} · {r.date}
-                </span>
-              </span>
-              <button type="button" onClick={() => remove(r.id)} aria-label={t('admin.delete')} title={t('admin.delete')} className="rounded-lg p-2 text-muted transition hover:bg-azure-soft hover:text-azure">
-                <Trash2 className="h-4 w-4" strokeWidth={1.8} />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <form onSubmit={submit} className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <label className="label">{t('admin.examTitle')}</label>
-          <input value={form.title_fr} onChange={(e) => setForm({ ...form, title_fr: e.target.value })} className="field" placeholder="Examen final" />
-        </div>
-        <div>
-          <label className="label">{t('admin.examDate')}</label>
-          <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="field" />
-        </div>
-        <div>
-          <label className="label">{t('admin.examKind')}</label>
-          <Select value={form.kind} onChange={(v) => setForm({ ...form, kind: v })} options={EXAM_KINDS.map((k) => ({ value: k, label: t(`examkind.${k}`) }))} />
-        </div>
-        <div>
-          <label className="label">{t('sem.s')}</label>
-          <Select value={form.semester} onChange={(v) => setForm({ ...form, semester: v })} options={semOptions} />
-        </div>
-        <div>
-          <label className="label">{t('admin.examModule')}</label>
-          <Select
-            value={form.course_code}
-            onChange={(v) => setForm({ ...form, course_code: v })}
-            options={[
-              { value: '', label: t('admin.examAll') },
-              ...courses
-                .filter((c) => String(c.semester) === form.semester)
-                .map((c) => ({ value: c.code, label: `${c.code} — ${pick(c, 'title')}` })),
-            ]}
-          />
-        </div>
-        {error && <p className="text-xs text-azure-deep sm:col-span-2">{error}</p>}
-        <button type="submit" disabled={busy || !form.title_fr.trim() || !form.date} className="btn-primary sm:col-span-2">
-          <Plus className="h-4 w-4" strokeWidth={2} />
-          {t('admin.addExam')}
-        </button>
-      </form>
-    </section>
   );
 }
 

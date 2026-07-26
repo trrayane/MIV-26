@@ -1,25 +1,38 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { api, getStudentToken, setStudentToken } from './api.js';
 
-/* localStorage keys owned by the personal-study features (progress / bookmarks / notes). */
+/* localStorage keys owned by the personal-study features (progress / bookmarks / notes / deadlines). */
 const KEYS = {
   progress: 'miv.progress.v1',
   bookmarks: 'miv.bookmarks.v1',
   notes: 'miv.notes.v1',
+  deadlines: 'miv.deadlines.v1',
 };
-const CHANGE_EVENTS = ['miv-progress-change', 'miv-bookmarks-change', 'miv-notes-change'];
+const CHANGE_EVENTS = ['miv-progress-change', 'miv-bookmarks-change', 'miv-notes-change', 'miv-deadlines-change'];
 
-function readKey(key) {
+function readKey(key, fallback) {
   try {
-    return JSON.parse(localStorage.getItem(key)) || {};
+    return JSON.parse(localStorage.getItem(key)) ?? fallback;
   } catch {
-    return {};
+    return fallback;
   }
 }
 
 /** Current on-device state as one object, ready to push to the account. */
 function snapshot() {
-  return { progress: readKey(KEYS.progress), bookmarks: readKey(KEYS.bookmarks), notes: readKey(KEYS.notes) };
+  return {
+    progress: readKey(KEYS.progress, {}),
+    bookmarks: readKey(KEYS.bookmarks, {}),
+    notes: readKey(KEYS.notes, {}),
+    deadlines: readKey(KEYS.deadlines, []),
+  };
+}
+
+/** Union by id — local wins on conflict, entries only on one side are kept too. */
+function mergeLists(local = [], server = []) {
+  const byId = new Map(server.map((d) => [d.id, d]));
+  for (const d of local) byId.set(d.id, d);
+  return [...byId.values()];
 }
 
 /** Shallow-per-course union so signing in never loses what's already on the device or the account. */
@@ -36,6 +49,7 @@ function mergeState(local, server) {
     progress: mergeMaps(local.progress, server.progress),
     bookmarks: { ...(server.bookmarks || {}), ...(local.bookmarks || {}) },
     notes: mergeMaps(local.notes, server.notes),
+    deadlines: mergeLists(local.deadlines, server.deadlines),
   };
 }
 
@@ -44,6 +58,7 @@ function applyState(state) {
   if (state.progress) localStorage.setItem(KEYS.progress, JSON.stringify(state.progress));
   if (state.bookmarks) localStorage.setItem(KEYS.bookmarks, JSON.stringify(state.bookmarks));
   if (state.notes) localStorage.setItem(KEYS.notes, JSON.stringify(state.notes));
+  if (state.deadlines) localStorage.setItem(KEYS.deadlines, JSON.stringify(state.deadlines));
   CHANGE_EVENTS.forEach((e) => window.dispatchEvent(new Event(e)));
 }
 
@@ -53,6 +68,7 @@ export function StudentProvider({ children }) {
   const [student, setStudent] = useState(null); // { email, name } when signed in
   const [ready, setReady] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
   const tokenRef = useRef(getStudentToken());
   const pushTimer = useRef(null);
 
@@ -124,7 +140,19 @@ export function StudentProvider({ children }) {
   };
 
   return (
-    <StudentContext.Provider value={{ student, ready, syncing, login, register, logout }}>
+    <StudentContext.Provider
+      value={{
+        student,
+        ready,
+        syncing,
+        login,
+        register,
+        logout,
+        authOpen,
+        openAuth: () => setAuthOpen(true),
+        closeAuth: () => setAuthOpen(false),
+      }}
+    >
       {children}
     </StudentContext.Provider>
   );

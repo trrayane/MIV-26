@@ -41,7 +41,7 @@ export default function Dashboard({ curriculum, onContinue }) {
     >
       <div className="card flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <CreditRing value={Math.round(pct * 100)} max={100} suffix="%" size={64} stroke={6} label={t('dash.progress')} />
+          <CreditRing value={Math.round(pct * 100)} max={100} suffix="%" size={92} stroke={7} label={t('dash.progress')} />
           <div className="min-w-0">
             <p className="font-mono text-xs uppercase tracking-[.18em] text-muted">{t('dash.title')}</p>
             <p className="mt-1 font-display text-lg font-semibold tabular-nums">

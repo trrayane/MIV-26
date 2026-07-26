@@ -82,6 +82,11 @@ export default function Hub({ program }) {
     [scoped, needle, bookmarksVersion]
   );
 
+  const allCourses = useMemo(
+    () => (curriculum ?? []).flatMap((s) => s.units.flatMap((u) => u.courses)),
+    [curriculum]
+  );
+
   const totals = useMemo(() => {
     const courses = scoped.flatMap((s) => s.units.flatMap((u) => u.courses));
     return {
@@ -105,7 +110,7 @@ export default function Hub({ program }) {
 
       {curriculum && (
         <div className="mx-auto mt-8 max-w-6xl px-5">
-          <ExamDates semester={semester} />
+          <ExamDates semester={semester} courses={allCourses} />
         </div>
       )}
 

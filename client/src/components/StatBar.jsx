@@ -19,7 +19,7 @@ export default function StatBar({ totals, scopeLabel, ringValue, ringMax }) {
     <section className="mx-auto mt-8 max-w-6xl px-5">
       <div className="card flex flex-col items-center gap-5 p-5 sm:flex-row sm:justify-center">
         <div className="flex items-center gap-4 sm:pr-5">
-          <CreditRing value={ringValue} max={ringMax} label={t('stats.credits')} />
+          <CreditRing value={ringValue} max={ringMax} size={92} stroke={7} label={t('stats.credits')} />
           <div className="min-w-0">
             <p className="font-mono text-xs uppercase tracking-[.18em] text-muted">{t('stats.semester')}</p>
             <p className="truncate font-display text-lg font-semibold">{scopeLabel}</p>
@@ -28,7 +28,7 @@ export default function StatBar({ totals, scopeLabel, ringValue, ringMax }) {
 
         <div className="hidden w-px self-stretch bg-hair sm:block" />
 
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-6">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
           {ITEMS.map(({ key, icon: Icon, labelKey, suffix }, i) => (
             <motion.div
               key={key}
@@ -37,8 +37,8 @@ export default function StatBar({ totals, scopeLabel, ringValue, ringMax }) {
               transition={{ duration: 0.4, delay: 0.04 * i }}
               className="min-w-0"
             >
-              <dt className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-[.14em] text-muted">
-                <Icon className="h-3.5 w-3.5 text-azure" strokeWidth={1.9} aria-hidden="true" />
+              <dt className="flex items-center gap-1.5 whitespace-nowrap font-mono text-xs uppercase tracking-[.1em] text-muted">
+                <Icon className="h-3.5 w-3.5 shrink-0 text-azure" strokeWidth={1.9} aria-hidden="true" />
                 {t(labelKey)}
               </dt>
               <dd className="mt-1 font-display text-xl font-semibold tabular-nums">

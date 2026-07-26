@@ -7,6 +7,8 @@ import { getNote, setNote } from '../lib/notes.js';
 import { courseDoneCount, isChapterDone, toggleChapter, useProgressVersion } from '../lib/progress.js';
 import { KindIcon, LoadBar, PdfViewer, ProgressBar, isPreviewablePdf, formatHours, unitToken } from './ui.jsx';
 import { groupResources } from '../lib/resourceGroups.js';
+import { useStudent } from '../lib/student.jsx';
+import SignInGate from './SignInGate.jsx';
 
 /** True if the resource was added within the last 7 days. */
 function isRecent(createdAt) {
@@ -230,6 +232,7 @@ export default function CourseDetail({ course, focusResources = false, onClose }
 
 function AssistantPanel({ course }) {
   const { t, lang } = useLang();
+  const { student } = useStudent();
   const [enabled, setEnabled] = useState(null);
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState('');
@@ -287,33 +290,39 @@ function AssistantPanel({ course }) {
 
       {open && (
         <div className="mt-4">
-          {messages.length > 0 && (
-            <div className="scroll-slim mb-3 max-h-[420px] min-h-[160px] space-y-3 overflow-y-auto">
-              {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`rounded-xl px-3 py-2 text-sm leading-relaxed ${
-                    m.role === 'user' ? 'ml-6 bg-azure-soft text-ink' : 'mr-6 bg-canvas text-ink'
-                  }`}
-                >
-                  {m.text}
+          {!student ? (
+            <SignInGate />
+          ) : (
+            <>
+              {messages.length > 0 && (
+                <div className="scroll-slim mb-3 max-h-[420px] min-h-[160px] space-y-3 overflow-y-auto">
+                  {messages.map((m, i) => (
+                    <div
+                      key={i}
+                      className={`rounded-xl px-3 py-2 text-sm leading-relaxed ${
+                        m.role === 'user' ? 'ml-6 bg-azure-soft text-ink' : 'mr-6 bg-canvas text-ink'
+                      }`}
+                    >
+                      {m.text}
+                    </div>
+                  ))}
+                  {busy && <div className="mr-6 rounded-xl bg-canvas px-3 py-2 text-sm text-muted">{t('assistant.thinking')}</div>}
                 </div>
-              ))}
-              {busy && <div className="mr-6 rounded-xl bg-canvas px-3 py-2 text-sm text-muted">{t('assistant.thinking')}</div>}
-            </div>
+              )}
+              <form onSubmit={ask} className="flex items-center gap-2">
+                <input
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder={t('assistant.placeholder')}
+                  className="field flex-1 text-sm"
+                />
+                <button type="submit" disabled={busy || !question.trim()} className="btn-primary px-3">
+                  <Send className="h-4 w-4" strokeWidth={2} />
+                </button>
+              </form>
+              {error && <p className="mt-2 text-xs text-azure-deep">{error}</p>}
+            </>
           )}
-          <form onSubmit={ask} className="flex items-center gap-2">
-            <input
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder={t('assistant.placeholder')}
-              className="field flex-1 text-sm"
-            />
-            <button type="submit" disabled={busy || !question.trim()} className="btn-primary px-3">
-              <Send className="h-4 w-4" strokeWidth={2} />
-            </button>
-          </form>
-          {error && <p className="mt-2 text-xs text-azure-deep">{error}</p>}
         </div>
       )}
     </section>

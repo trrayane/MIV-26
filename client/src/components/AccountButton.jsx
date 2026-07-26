@@ -7,8 +7,7 @@ import { useStudent } from '../lib/student.jsx';
 
 export default function AccountButton() {
   const { t } = useLang();
-  const { student, ready, syncing, login, register, logout } = useStudent();
-  const [open, setOpen] = useState(false);
+  const { student, ready, syncing, login, register, logout, authOpen, openAuth, closeAuth } = useStudent();
 
   if (!ready) return null;
 
@@ -19,7 +18,7 @@ export default function AccountButton() {
       {student ? (
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={openAuth}
           className="grid h-9 w-9 place-items-center rounded-full border border-hair bg-surface font-display text-sm font-semibold text-azure transition hover:border-azure"
           aria-label={t('account.title')}
           title={student.email}
@@ -27,7 +26,7 @@ export default function AccountButton() {
           {initial}
         </button>
       ) : (
-        <button type="button" onClick={() => setOpen(true)} className="btn-ghost px-3 py-2 text-sm">
+        <button type="button" onClick={openAuth} className="btn-ghost px-3 py-2 text-sm">
           <User className="h-4 w-4" strokeWidth={1.8} />
           <span className="hidden sm:inline">{t('account.signIn')}</span>
         </button>
@@ -35,9 +34,9 @@ export default function AccountButton() {
 
       {createPortal(
         <AnimatePresence>
-          {open && (
+          {authOpen && (
             <AccountModal
-              onClose={() => setOpen(false)}
+              onClose={closeAuth}
               student={student}
               syncing={syncing}
               login={login}
