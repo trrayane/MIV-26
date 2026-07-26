@@ -41,7 +41,7 @@ export default function Admin() {
 }
 
 function Shell({ children }) {
-  return <div className="mx-auto max-w-6xl px-5 py-12">{children}</div>;
+  return <div className="mx-auto max-w-6xl px-4 py-8 sm:px-5 sm:py-12">{children}</div>;
 }
 
 /* ------------------------------------------------------------- sign-in */
@@ -174,7 +174,7 @@ function Workspace({ onSignOut }) {
       <AiHistory />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[280px_1fr] lg:items-start">
-        <nav aria-label={t('admin.pickCourse')} className="card scroll-slim max-h-[70vh] overflow-y-auto p-3 lg:sticky lg:top-24">
+        <nav aria-label={t('admin.pickCourse')} className="card scroll-slim max-h-[45vh] overflow-y-auto p-3 lg:sticky lg:top-24 lg:max-h-[70vh]">
           <input
             type="search"
             value={search}
@@ -321,19 +321,20 @@ function SemesterManager({ onChanged }) {
           <li key={s.number} className="rounded-xl border border-hair">
             <div className="flex items-center px-3 py-2.5">
               <Toggle checked={!!s.visible} onChange={() => toggle(s.number, !s.visible)} label={`${t('sem.s')} ${s.number}`} />
-              <span className="ml-3 flex flex-1 items-center gap-2.5 text-sm font-medium">
-                {t('sem.s')} {s.number} — {s.label_fr}
+              <span className="ml-3 flex min-w-0 flex-1 items-center gap-2 text-sm font-medium">
+                <span className="truncate">{t('sem.s')} {s.number} — {s.label_fr}</span>
                 {!s.visible && (
-                  <span className="chip bg-canvas text-muted">{t('admin.hidden')}</span>
+                  <span className="chip shrink-0 bg-canvas text-muted">{t('admin.hidden')}</span>
                 )}
               </span>
               <button
                 type="button"
                 onClick={() => setOpen(open === s.number ? null : s.number)}
-                className="btn-ghost ml-3 flex-none px-3 text-xs"
+                className="btn-ghost ml-2 flex-none px-3 text-xs sm:ml-3"
+                title={t('admin.driveLinks')}
               >
                 <FolderOpen className="h-3.5 w-3.5" strokeWidth={1.8} />
-                {t('admin.driveLinks')}
+                <span className="hidden sm:inline">{t('admin.driveLinks')}</span>
               </button>
             </div>
             {open === s.number && (

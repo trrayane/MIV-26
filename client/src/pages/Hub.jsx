@@ -226,7 +226,7 @@ function DriveSpace({ curriculum }) {
                     href={l.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="group flex items-center gap-3 rounded-xl border border-hair bg-white px-3 py-2.5 transition hover:border-azure hover:bg-azure-soft/60"
+                    className="group flex items-center gap-3 rounded-xl border border-hair bg-surface px-3 py-2.5 transition hover:border-azure hover:bg-azure-soft/60"
                   >
                     <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-azure-soft text-azure">
                       <KindIcon kind="drive" className="h-3.5 w-3.5" />

@@ -13,7 +13,7 @@ export const PROGRAM = {
   degree_en: 'Academic Master — Visual Computing (IV)',
   domain: 'MI',
   filiere: 'Informatique',
-  accreditation: '2021-2022',
+  accreditation: '2026-2027',
   links: {
     ficheTechnique: 'https://finfo.usthb.dz/storage/disk/FichTechniqueMIV2021-1.pdf',
     cahierDesCharges: 'https://finfo.usthb.dz/storage/disk/Master-academique-MIV-2020FINAL_num.pdf',

@@ -63,7 +63,7 @@ export default function ExamDates({ semester }) {
           return (
             <li
               key={r.id}
-              className="flex items-center gap-3 rounded-xl border border-hair bg-white px-3 py-2.5"
+              className="flex items-center gap-3 rounded-xl border border-hair bg-surface px-3 py-2.5"
             >
               <span className={`chip shrink-0 ${KIND_STYLE[r.kind] ?? KIND_STYLE.other}`}>
                 {t(`examkind.${r.kind}`) ?? r.kind}

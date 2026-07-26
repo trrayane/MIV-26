@@ -17,7 +17,7 @@ export default function Footer({ program }) {
   ].filter(([, href]) => Boolean(href));
 
   return (
-    <footer className="mt-20 border-t border-hair bg-white/60 backdrop-blur">
+    <footer className="mt-20 border-t border-hair bg-surface/60 backdrop-blur">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 md:grid-cols-[1.2fr_1fr]">
         <div>
           <div className="flex items-center gap-3">

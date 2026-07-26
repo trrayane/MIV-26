@@ -9,7 +9,7 @@ export default function Toolbar({ semesters, active, onSelect, query, onQuery })
 
   return (
     <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-3 px-5 sm:flex-row sm:items-center sm:justify-between">
-      <div role="tablist" aria-label={t('stats.semester')} className="flex flex-wrap items-center gap-1 rounded-2xl border border-hair bg-white/70 p-1 backdrop-blur">
+      <div role="tablist" aria-label={t('stats.semester')} className="flex flex-wrap items-center gap-1 rounded-2xl border border-hair bg-surface/70 p-1 backdrop-blur">
         {tabs.map((tab) => {
           const selected = active === tab.number;
           return (

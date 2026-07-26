@@ -73,8 +73,8 @@ export default function CourseDetail({ course, focusResources = false, onClose }
                 <div>
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className={`chip ${token.bg} ${token.text}`}>{course.code}</span>
-                    <span className="chip bg-white text-muted">{course.unit?.code}</span>
-                    <span className="chip bg-white text-muted">
+                    <span className="chip bg-canvas text-muted">{course.unit?.code}</span>
+                    <span className="chip bg-canvas text-muted">
                       {t('sem.s')} {course.semester}
                     </span>
                   </div>
@@ -433,7 +433,7 @@ function ResourceRow({ resource, dense = false, onPreview }) {
     </>
   );
 
-  const cls = `group flex w-full items-center gap-3 rounded-xl border border-hair bg-white px-3 text-left transition hover:border-azure hover:bg-azure-soft/60 ${
+  const cls = `group flex w-full items-center gap-3 rounded-xl border border-hair bg-surface px-3 text-left transition hover:border-azure hover:bg-azure-soft/60 ${
     dense ? 'py-2' : 'py-2.5'
   }`;
 
