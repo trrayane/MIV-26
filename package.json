@@ -1,0 +1,14 @@
+{
+  "name": "miv-hub",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Resource hub for the USTHB Master Informatique Visuelle",
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix client && npm run seed --prefix server",
+    "dev:api": "npm run dev --prefix server",
+    "dev:web": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "reset": "npm run reset --prefix server"
+  }
+}

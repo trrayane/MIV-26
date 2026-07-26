@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 112px;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+    background-image:
+      radial-gradient(900px 520px at 88% -12%, rgba(27, 92, 229, 0.16), transparent 62%),
+      radial-gradient(760px 480px at -8% 6%, rgba(14, 165, 198, 0.14), transparent 58%);
+    background-size: auto, auto;
+    background-attachment: fixed, fixed;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-azure ring-offset-2 ring-offset-canvas rounded-lg;
+  }
+
+  ::selection {
+    background: rgba(27, 92, 229, 0.18);
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl bg-surface border border-hair shadow-card;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[11px] font-medium tracking-wide;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition
+           duration-200 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-azure text-white shadow-[0_10px_22px_-12px_rgba(27,92,229,.9)]
+           hover:bg-azure-deep hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-ghost {
+    @apply btn border border-hair bg-surface text-ink hover:border-azure hover:text-azure;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-hair bg-white px-3.5 py-2.5 text-sm
+           placeholder:text-muted/60 focus:border-azure focus:outline-none focus:ring-2 focus:ring-azure/25;
+  }
+
+  .label {
+    @apply mb-1.5 block font-mono text-[11px] uppercase tracking-[.16em] text-muted;
+  }
+
+  .rule {
+    @apply h-px w-full bg-gradient-to-r from-hair via-hair/60 to-transparent;
+  }
+}
+
+/* Thin scrollbar inside panels */
+.scroll-slim::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: #cbd9ee;
+  border-radius: 99px;
+}
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
