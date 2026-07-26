@@ -68,7 +68,7 @@ export default function CourseDetail({ course, focusResources = false, onClose }
             transition={{ type: 'spring', stiffness: 260, damping: 30 }}
             className="scroll-slim relative flex h-full w-full max-w-xl flex-col overflow-y-auto bg-canvas shadow-2xl"
           >
-            <header className="sticky top-0 z-10 border-b border-hair bg-canvas/95 px-6 py-5 backdrop-blur">
+            <header className="sticky top-0 z-10 border-b border-hair bg-canvas/95 px-5 py-4 backdrop-blur sm:px-6 sm:py-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -88,7 +88,7 @@ export default function CourseDetail({ course, focusResources = false, onClose }
               </div>
             </header>
 
-            <div className="space-y-6 px-6 py-6">
+            <div className="space-y-6 px-4 py-5 sm:px-6 sm:py-6">
               <section className="card p-5">
                 <p className="text-sm leading-relaxed">{pick(course, 'summary')}</p>
 

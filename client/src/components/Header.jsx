@@ -12,20 +12,20 @@ export function TopBar({ program }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-hair/80 bg-canvas/85 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3 sm:gap-5">
-        <Link to="/" className="flex items-center gap-3">
-          <Logo className="h-10 w-10" />
-          <span className="leading-tight">
-            <span className="block font-display text-sm font-semibold tracking-tight">
+      <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:gap-5 sm:px-5">
+        <Link to="/" className="flex min-w-0 items-center gap-2.5">
+          <Logo className="h-9 w-9 shrink-0 sm:h-10 sm:w-10" />
+          <span className="min-w-0 leading-tight">
+            <span className="block truncate font-display text-sm font-semibold tracking-tight">
               MIV<span className="text-azure"> · </span>USTHB
             </span>
-            <span className="block font-mono text-xs uppercase tracking-[.18em] text-muted">
+            <span className="hidden truncate font-mono text-xs uppercase tracking-[.18em] text-muted sm:block">
               {t('hero.title')}
             </span>
           </span>
         </Link>
 
-        <nav className="ml-auto flex items-center gap-1.5 sm:gap-2">
+        <nav className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           {onAdmin && (
             <Link to="/" className="btn-ghost hidden px-3 py-2 text-sm sm:inline-flex">
               <ScrollText className="h-4 w-4" strokeWidth={1.75} />
@@ -46,12 +46,12 @@ export function Hero({ program }) {
   const links = program?.links ?? {};
 
   return (
-    <section className="mx-auto max-w-6xl px-5 pb-2 pt-10 sm:pt-14">
+    <section className="mx-auto max-w-6xl px-5 pb-2 pt-8 sm:pt-14">
       <motion.p
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="font-mono text-xs uppercase tracking-[.2em] text-azure"
+        className="font-mono text-xs uppercase tracking-[.12em] text-azure sm:tracking-[.2em]"
       >
         {t('hero.eyebrow')}
       </motion.p>
@@ -62,7 +62,7 @@ export function Hero({ program }) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-            className="font-display text-[2.6rem] font-semibold leading-[1.02] tracking-tight sm:text-6xl"
+            className="font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight sm:text-6xl sm:leading-[1.02]"
           >
             {t('hero.title')}
           </motion.h1>

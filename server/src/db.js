@@ -138,6 +138,15 @@ export async function initSchema() {
   )`;
 }
 
+/** Cheap guard for serverless cold starts: one quick probe, full DDL only if tables are missing. */
+export async function ensureSchema() {
+  try {
+    await sql`SELECT 1 FROM semesters LIMIT 1`;
+  } catch {
+    await initSchema();
+  }
+}
+
 export async function getMeta(key, fallback = null) {
   const rows = await sql`SELECT value FROM meta WHERE key = ${key}`;
   return rows.length ? rows[0].value : fallback;

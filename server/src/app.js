@@ -65,22 +65,47 @@ async function buildCourse(course, unit, semester) {
   };
 }
 
+/** Groups an array of rows by a key into { keyValue: [rows] }. */
+function groupBy(rows, key) {
+  const map = {};
+  for (const r of rows) (map[r[key]] ??= []).push(r);
+  return map;
+}
+
+/**
+ * Fetches the whole curriculum in 6 bulk queries (run in parallel) and assembles
+ * the tree in JS — far faster than a query-per-course against a remote database.
+ */
 async function buildCurriculum() {
-  const semesters = await sql`SELECT * FROM semesters ORDER BY number`;
-  const out = [];
-  for (const semester of semesters) {
-    const [driveLinks, units] = await Promise.all([
-      sql`SELECT * FROM semester_links WHERE semester_id = ${semester.id} ORDER BY position, id`,
-      sql`SELECT * FROM units WHERE semester_id = ${semester.id} ORDER BY position, id`,
-    ]);
-    const unitsOut = [];
-    for (const unit of units) {
-      const courses = await sql`SELECT * FROM courses WHERE unit_id = ${unit.id} ORDER BY position, id`;
-      unitsOut.push({ ...unit, courses: await Promise.all(courses.map((c) => buildCourse(c, unit, semester))) });
-    }
-    out.push({ ...semester, driveLinks, units: unitsOut });
-  }
-  return out;
+  const [semesters, units, courses, chapters, resources, links] = await Promise.all([
+    sql`SELECT * FROM semesters ORDER BY number`,
+    sql`SELECT * FROM units ORDER BY position, id`,
+    sql`SELECT * FROM courses ORDER BY position, id`,
+    sql`SELECT * FROM chapters ORDER BY position`,
+    sql`SELECT * FROM resources ORDER BY position, id`,
+    sql`SELECT * FROM semester_links ORDER BY position, id`,
+  ]);
+
+  const unitsBySem = groupBy(units, 'semester_id');
+  const linksBySem = groupBy(links, 'semester_id');
+  const coursesByUnit = groupBy(courses, 'unit_id');
+  const chaptersByCourse = groupBy(chapters, 'course_id');
+  const resourcesByCourse = groupBy(resources, 'course_id');
+
+  return semesters.map((semester) => ({
+    ...semester,
+    driveLinks: linksBySem[semester.id] ?? [],
+    units: (unitsBySem[semester.id] ?? []).map((unit) => ({
+      ...unit,
+      courses: (coursesByUnit[unit.id] ?? []).map((course) => ({
+        ...course,
+        unit: { id: unit.id, code: unit.code, type: unit.type, label_fr: unit.label_fr, label_en: unit.label_en },
+        semester: semester.number,
+        chapters: chaptersByCourse[course.id] ?? [],
+        resources: resourcesByCourse[course.id] ?? [],
+      })),
+    })),
+  }));
 }
 
 app.get('/api/program', async (_req, res) => {

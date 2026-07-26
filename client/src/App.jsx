@@ -17,7 +17,7 @@ export default function App() {
 
   return (
     <StudentProvider>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col overflow-x-hidden">
         <TopBar program={program} />
         <div className="flex-1">
           <Routes>
