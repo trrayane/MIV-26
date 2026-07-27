@@ -1,164 +1,178 @@
-# MIV Hub — Master Informatique Visuelle, USTHB
+<div align="center">
+  <img src="client/public/favicon.svg" alt="MIV Hub logo" width="80" />
 
-Resource hub for the **Master Informatique Visuelle (IV)** at USTHB, Faculté d'Électronique et
-d'Informatique. Every module of the four semesters, its chapters, and the links you attach to
-them — in French and English.
+  <h1>MIV Hub</h1>
 
-Data comes from the official programme documents:
-[fiche technique](https://finfo.usthb.dz/storage/disk/FichTechniqueMIV2021-1.pdf) and
-[cahier des charges](https://finfo.usthb.dz/storage/disk/Master-academique-MIV-2020FINAL_num.pdf)
-(2021-2022 accreditation).
+  <h3>Hub de ressources pour le Master Informatique Visuelle — USTHB</h3>
 
-**24 modules · 13 teaching units · 112 chapters · 120 credits · 1428 hours**
+  <p>
+    <img alt="React" src="https://img.shields.io/badge/frontend-React%2018%20%2B%20Vite-61DAFB?logo=react&logoColor=white">
+    <img alt="Express" src="https://img.shields.io/badge/backend-Express%20(Node)-000000?logo=express&logoColor=white">
+    <img alt="Postgres" src="https://img.shields.io/badge/database-Neon%20PostgreSQL-336791?logo=postgresql&logoColor=white">
+    <img alt="Gemini" src="https://img.shields.io/badge/AI-Gemini%20Flash-4285F4?logo=googlegemini&logoColor=white">
+    <img alt="Tailwind" src="https://img.shields.io/badge/styling-Tailwind%20CSS%203-06B6D4?logo=tailwindcss&logoColor=white">
+    <img alt="Vercel" src="https://img.shields.io/badge/deploy-Vercel-000000?logo=vercel&logoColor=white">
+  </p>
 
----
-
-## Stack
-
-| Layer    | Choice                                                                 |
-| -------- | ---------------------------------------------------------------------- |
-| Frontend | React 18, Vite, Tailwind CSS, Framer Motion, lucide-react, React Router |
-| Backend  | Node + Express (ES modules), JWT auth, bcrypt                          |
-| Database | SQLite via better-sqlite3 (single file, zero setup)                    |
+  <p>
+    <strong>24 modules · 13 unités · 112 chapitres · 120 crédits · 1428 heures</strong>
+  </p>
+</div>
 
 ---
 
-## Run it locally
+## Qu'est-ce que MIV Hub ?
 
-Two terminals, from the project root.
+MIV Hub est un hub de ressources **bilingue (FR/EN)** pour le **Master Informatique Visuelle (IV)** de l'**USTHB**, Faculté d'Électronique et d'Informatique. Il regroupe l'intégralité des 24 modules répartis sur 4 semestres, avec leurs chapitres, liens de référence, fichiers PDF, dossiers Drive, et un assistant IA — le tout dans une interface moderne, sombre, et réactive.
 
-```bash
-# 1. API — http://localhost:4000
-cd server
-cp .env.example .env          # then edit JWT_SECRET and ADMIN_PASSWORD
-npm install
-npm run seed                  # loads the official curriculum into data/miv.db
-npm run dev
+Les données proviennent des documents officiels du programme :
+[fiche technique](https://finfo.usthb.dz/storage/disk/FichTechniqueMIV2021-1.pdf) et
+[cahier des charges](https://finfo.usthb.dz/storage/disk/Master-academique-MIV-2020FINAL_num.pdf).
 
-# 2. Frontend — http://localhost:5173
-cd client
-npm install
-npm run dev
+## Fonctionnement
+
+```
+Curriculum officiel  →  Base de données (Neon Postgres)  →  API REST (Express)
+                               │
+       ┌───────────────────────┼───────────────────────┐
+       ▼                       ▼                       ▼
+  Frontend React         Admin Panel             Assistant IA
+  (navigation,          (CRUD ressources,        (Gemini Flash
+   progression,          upload fichiers,          + contexte PDF
+   signets, notes)       gestion chapitres)        par module)
 ```
 
-Vite proxies `/api` to port 4000, so no CORS setup is needed in development.
+1. **Curriculum** — les 4 semestres, unités d'enseignement et modules sont définis dans `server/src/curriculum.js` et seedés en base.
+2. **Exploration** — parcourez les modules par semestre, filtrez par mot-clé, consultez les chapitres et leurs ressources.
+3. **Ressources** — chaque chapitre peut contenir des liens (Cours, TD, TP, Examens, Enregistrements, Drive) et des fichiers uploadés (PDF, Office, ZIP) hébergés sur Vercel Blob.
+4. **Progression** — cochez les chapitres terminés, suivez votre avancement par module et par semestre, synchronisé sur votre compte.
+5. **Assistant IA** — posez des questions sur un module, l'IA répond en s'appuyant sur les PDFs du module et le contexte du curriculum.
 
-The admin page lives at `/admin`. The default password is `miv-admin` — change it in `server/.env`
-before putting this online.
+## Fonctionnalités
 
-### Single-server production mode
+- 🌳 **Arbre curriculum complet** — 4 semestres, 13 unités, 24 modules, 112 chapitres.
+- 🔍 **Recherche en direct** — filtre modules par code, titre (FR/EN), résumé, enseignant ou nom de chapitre.
+- 📁 **Ressources organisées** — Cours, TD, TP, Examens, Enregistrements, Drive, Autre — liens et fichiers uploadés.
+- 📄 **Prévisualisation PDF** — consultable directement dans l'interface.
+- 📦 **Téléchargement ZIP** — tous les fichiers d'un module en un clic.
+- 🤖 **Assistant IA par module** — propulsé par Google Gemini Flash, avec contexte des PDFs du module.
+- 👤 **Comptes étudiants** — inscription, connexion, synchronisation multi-appareils de la progression, des signets, des notes et des échéances.
+- 📅 **Examens & échéances** — dates officielles + échéances personnelles, fusionnées et triées.
+- 🎨 **Thème sombre/clair** — avec palette de couleurs personnalisable (azur, aqua, iris).
+- 🌐 **Bilingue FR/EN** — interface intégralement traduite.
+- 🔧 **Panneau d'administration** — `/admin` : CRUD complet des ressources, chapitres, upload fichiers, visibility des semestres, gestion de l'IA.
 
-```bash
-cd client && npm run build     # outputs client/dist
-cd ../server && npm start      # serves the API *and* the built frontend on :4000
-```
+## Stack technique
 
-The Express app serves `client/dist` when it exists, with an SPA fallback so `/admin` works on a
-hard refresh.
+| Couche        | Technologie |
+|---------------|-------------|
+| **Frontend**  | React 18, Vite 5, Tailwind CSS 3, Framer Motion 11, lucide-react, React Router 6 |
+| **Backend**   | Node.js 18+, Express 4 (ES modules), JWT (jsonwebtoken), bcryptjs |
+| **Base de données** | Neon Postgres (serverless) via `@neondatabase/serverless` |
+| **Stockage fichiers** | Vercel Blob CDN |
+| **IA**        | Google Gemini Flash (`gemini-2.0-flash-latest`) avec rotation de clés API |
+| **Déploiement** | Vercel (serverless) ou Node standalone (Railway / Render / VPS) |
 
----
-
-## Structure
+## Structure du projet
 
 ```
 miv-hub/
+├── api/
+│   └── index.js              # Point d'entrée serverless Vercel
 ├── server/
 │   ├── src/
-│   │   ├── curriculum.js   # the official programme: semesters → units → modules → chapters
-│   │   ├── db.js           # SQLite schema + connection
-│   │   ├── seed.js         # loads curriculum.js into the database
-│   │   └── index.js        # Express API
-│   └── data/miv.db         # created by the seed
-└── client/
-    ├── src/
-    │   ├── lib/i18n.jsx    # FR/EN dictionary + language context
-    │   ├── lib/api.js      # fetch wrapper with token handling
-    │   ├── components/     # ui atoms, header, stat bar, course card, detail panel, footer
-    │   └── pages/          # Hub.jsx, Admin.jsx
-    └── tailwind.config.js  # blue palette + type scale
+│   │   ├── index.js          # Serveur Express
+│   │   ├── app.js            # Routes, middleware, authentification
+│   │   ├── db.js             # Schéma Postgres + helpers
+│   │   ├── curriculum.js     # Programme officiel (données)
+│   │   ├── seed.js           # Peuplement de la base
+│   │   ├── assistant.js      # Assistant IA Gemini
+│   │   └── local-resources.js# Ressources locales
+│   ├── public/
+│   │   ├── s1/               # Fichiers Semestre 1
+│   │   └── s2/               # Fichiers Semestre 2
+│   └── .env.example
+├── client/
+│   ├── src/
+│   │   ├── main.jsx          # Point d'entrée React
+│   │   ├── App.jsx           # Routes (/, /admin, *)
+│   │   ├── lib/              # API, i18n (FR/EN), progression, signets, notes
+│   │   ├── components/       # Header, CourseCard, CourseDetail, Dashboard, etc.
+│   │   └── pages/            # Hub.jsx, Admin.jsx, NotFound.jsx
+│   ├── public/favicon.svg
+│   └── .env.example
+├── vercel.json
+└── package.json
 ```
 
----
+## Démarrage rapide
 
-## Data model
+### Prérequis
 
-```
-semesters ──< units ──< courses ──< chapters
-                          └──────< resources (chapter_id nullable)
-```
+- Node.js 18+
+- Une base Neon Postgres (ou toute instance Postgres)
+- Un token Vercel Blob (pour l'upload de fichiers)
+- (Optionnel) Une ou plusieurs clés API Google Gemini
 
-`resources.origin` distinguishes seeded reference links (curated open courseware, documentation)
-from `custom` links you add yourself. `courses.drive_url` holds the main Drive folder shown on the
-card button.
-
----
-
-## API
-
-Public:
-
-| Method | Route                  | Purpose                                        |
-| ------ | ---------------------- | ---------------------------------------------- |
-| GET    | `/api/program`         | University, degree, official document links    |
-| GET    | `/api/curriculum`      | Full tree; `?semester=1` narrows it            |
-| GET    | `/api/stats`           | Totals plus per-semester breakdown             |
-| GET    | `/api/courses/:code`   | One module with chapters and resources         |
-| GET    | `/api/health`          | Uptime probe                                   |
-
-Requires `Authorization: Bearer <token>`:
-
-| Method | Route                        | Purpose                             |
-| ------ | ---------------------------- | ----------------------------------- |
-| POST   | `/api/auth/login`            | Exchange the password for a token   |
-| GET    | `/api/admin/courses`         | Flat module list with link counts   |
-| POST   | `/api/resources`             | Add a link (module or chapter)      |
-| PUT    | `/api/resources/:id`         | Edit a link                         |
-| DELETE | `/api/resources/:id`         | Remove a link                       |
-| PUT    | `/api/courses/:id/drive`     | Set the module's Drive folder       |
-
----
-
-## Adding your Drive links
-
-1. Open `/admin` and sign in.
-2. Pick a module in the left column.
-3. **Module Drive folder** — the shared folder for the whole module. It becomes the destination of
-   the card's main button.
-4. **Add a link** — name, URL, type, and optionally a chapter. Links attached to a chapter appear
-   under that chapter in the module panel; links with no chapter appear in the module's Resources
-   section.
-
-## Editing the curriculum
-
-`server/src/curriculum.js` is the single source of truth for programme content. Edit it, then:
+### Installation
 
 ```bash
-cd server && npm run reset    # rebuilds every table from the file — custom links are erased
+# 1. Cloner le projet
+git clone <url> && cd miv-hub
+
+# 2. Configurer les variables d'environnement
+cp server/.env.example server/.env
+# Éditer server/.env : DATABASE_URL, BLOB_READ_WRITE_TOKEN, JWT_SECRET, ADMIN_PASSWORD
+
+# 3. Installer les dépendances et seed la base
+npm run setup
+
+# 4. Lancer l'API (port 4000)
+npm run dev:api
+
+# 5. Lancer le frontend (port 5173)
+npm run dev:web
 ```
 
-To keep your own links, add chapters or modules through a small migration instead of `reset`.
+Ouvrir [http://localhost:5173](http://localhost:5173) — Vite proxyfie `/api` vers le port 4000.
+
+### Mode production (serveur unique)
+
+```bash
+npm run build     # build le frontend dans client/dist
+npm start         # sert l'API + le frontend buildé sur le port 4000
+```
+
+## Variables d'environnement
+
+| Variable | Requise | Rôle |
+|---|---|---|
+| `DATABASE_URL` | Oui | Chaîne de connexion Neon Postgres |
+| `BLOB_READ_WRITE_TOKEN` | Oui | Token Vercel Blob |
+| `JWT_SECRET` | Oui | Secret pour les tokens JWT |
+| `ADMIN_PASSWORD` / `ADMIN_PASSWORD_HASH` | Oui | Mot de passe du panneau admin |
+| `GEMINI_API_KEYS` | Non | Clés API Google Gemini (séparées par des virgules) |
+| `CORS_ORIGIN` | Non | Origine CORS autorisée (défaut `*`) |
+| `PORT` | Non | Port du serveur (défaut `4000`) |
+
+## Scripts disponibles
+
+| Commande | Description |
+|---|---|
+| `npm run setup` | Installation complète + seed |
+| `npm run dev:api` | API en mode développement |
+| `npm run dev:web` | Frontend en mode développement |
+| `npm run build` | Build du frontend |
+| `npm run start` | Production (API + frontend) |
+| `npm run seed` | Peuplement de la base |
+| `npm run reset` | Réinitialisation complète (seed --force) |
+
+## License
+
+Projet étudiant non officiel. Les descriptions de cours, horaires, coefficients et crédits sont transcrits depuis les documents officiels du programme MIV de l'USTHB. Vérifiez la page officielle pour la version actuelle.
 
 ---
 
-## Deploying
-
-**One service (simplest).** Build the client, deploy the `server` folder on Railway, Render, or a
-VPS, and point the start command at `npm start`. Mount a persistent volume and set `DATA_DIR` to it
-so `miv.db` survives restarts.
-
-**Two services.** Deploy `client/dist` to Vercel or Netlify with `VITE_API_URL` set to the API
-origin, and the API anywhere Node runs. Set `CORS_ORIGIN` to the frontend URL.
-
-Before going live:
-
-- set a long random `JWT_SECRET`
-- set `ADMIN_PASSWORD_HASH` instead of the plain password:
-  `node -e "console.log(require('bcryptjs').hashSync('your-password',10))"`
-- set `CORS_ORIGIN` to your frontend origin
-
----
-
-## Notes
-
-Unofficial student resource. Course descriptions, hours, coefficients and credits are transcribed
-from the USTHB programme documents; check the official page for the current version.
+<div align="center">
+  <p>Fait avec ❤️ par et pour les étudiants du Master Informatique Visuelle — USTHB</p>
+</div>
